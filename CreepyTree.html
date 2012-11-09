@@ -18,6 +18,7 @@
 		<script src="three.js"></script>
 		<script src="Curve.js"></script>
 		<script src="TubeGeometry.js"></script>
+		<script src="TreeTubeGeometry.js"></script>
 		<script src="CameraHelper.js"></script>
 
 		<!-- where curves formulas are defined -->
@@ -59,6 +60,7 @@
 
 		// Keep a dictionary of Curve instances
 		var splines = {
+			TreeCurve: new THREE.Curves.GrannyKnot(),
 			GrannyKnot: new THREE.Curves.GrannyKnot(),
 			HeartCurve: new THREE.Curves.HeartCurve(3.5),
 			VivianiCurve: new THREE.Curves.VivianiCurve(70),
@@ -115,7 +117,8 @@
 
 			extrudePath = splines[value];
 
-			tube = new THREE.TubeGeometry(extrudePath, segments, 2, radiusSegments, closed2, debug);
+			//tube = new THREE.TubeGeometry(extrudePath, segments, 2, radiusSegments, closed2, debug);
+			tube = new THREE.TreeTubeGeometry(extrudePath, segments, 2, radiusSegments, closed2, debug);
 
 			addGeometry(tube, 0xff00ff);
 			setScale();
@@ -188,8 +191,8 @@
 			info.innerHTML += dropdown;
 
 			info.innerHTML += '<br/>Scale: <select id="scale" onchange="setScale()"><option>1</option><option>2</option><option selected>4</option><option>6</option><option>10</option></select>';
-			info.innerHTML += '<br/>Extrusion Segments: <select onchange="addTube()" id="segments"><option>50</option><option selected>100</option><option>200</option><option>400</option></select>';
-			info.innerHTML += '<br/>Radius Segments: <select id="radiusSegments" onchange="addTube()"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option>12</option></select>';
+			info.innerHTML += '<br/>Extrusion Segments: <select onchange="addTube()" id="segments"><option>50</option><option>100</option><option>200</option><option selected>400</option></select>';
+			info.innerHTML += '<br/>Radius Segments: <select id="radiusSegments" onchange="addTube()"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option selected>12</option></select>';
 			info.innerHTML += '<br/>Debug normals: <input id="debug" type="checkbox" onchange="addTube()"  /> Closed:<input id="closed" onchange="addTube()" type="checkbox" checked />';
 
 			info.innerHTML += '<br/><br/><input id="animation" type="button" onclick="animateCamera(true)" value="Camera Spline Animation View: OFF"/><br/> Look Ahead <input id="lookAhead" type="checkbox" onchange="animateCamera()" /> Camera Helper <input id="cameraHelper" type="checkbox" onchange="animateCamera()" />';
