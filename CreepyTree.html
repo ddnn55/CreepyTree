@@ -17,6 +17,7 @@
 
 		<script src="three.js"></script>
 		<script src="Curve.js"></script>
+		<script src="TreeCurve.js"></script>
 		<script src="TubeGeometry.js"></script>
 		<script src="TreeTubeGeometry.js"></script>
 		<script src="CameraHelper.js"></script>
@@ -58,9 +59,14 @@
 			new THREE.Vector3(0, -40, 40),
 		]);
 
+		var treeCurve = new TreeCurve(0.0, 0.0, 0.0);
+		treeCurve.root.addChild(30.0, 30.0, 30.0);
+		treeCurve.root.addChild(-30.0, 30.0, 30.0);
+		treeCurve.root.addChild(30.0, -30.0, 30.0);
+
 		// Keep a dictionary of Curve instances
 		var splines = {
-			TreeCurve: new THREE.Curves.GrannyKnot(),
+			TreeCurve: treeCurve,
 			GrannyKnot: new THREE.Curves.GrannyKnot(),
 			HeartCurve: new THREE.Curves.HeartCurve(3.5),
 			VivianiCurve: new THREE.Curves.VivianiCurve(70),
@@ -119,6 +125,7 @@
 
 			//tube = new THREE.TubeGeometry(extrudePath, segments, 2, radiusSegments, closed2, debug);
 			tube = new THREE.TreeTubeGeometry(extrudePath, segments, 2, radiusSegments, closed2, debug);
+                        console.log(tube);
 
 			addGeometry(tube, 0xff00ff);
 			setScale();
