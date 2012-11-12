@@ -95,10 +95,10 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
         var radiusIndexA = f;
 	var radiusIndexB = (f+1) % radiusSegments;
         geometry.faces.push(new THREE.Face4(
-	  (d - 1) * radiusSegments + radiusIndexA,
-	  (d - 1) * radiusSegments + radiusIndexB,
+	  d       * radiusSegments + radiusIndexA,
 	  d       * radiusSegments + radiusIndexB,
-	  d       * radiusSegments + radiusIndexA
+	  (d - 1) * radiusSegments + radiusIndexB,
+	  (d - 1) * radiusSegments + radiusIndexA
 	));
       }
     }
