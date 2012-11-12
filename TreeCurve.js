@@ -1,4 +1,4 @@
-var RANDOM_SEGMENT_COMPONENT_MAX = 10.0;
+var RANDOM_SEGMENT_COMPONENT_MAX = 20.0;
 var RANDOM_SEGMENT_COMPONENT_MIN = 3.0;
 
 TreeCurve = function(x, y, z)
@@ -55,9 +55,9 @@ TreeCurveNode.prototype.addRandomTree = function(segments, depth)
   
   for(var b = 0; b < branches; b++)
   {
-    var dx = RANDOM_SEGMENT_COMPONENT_MIN + 2 * (Math.random() - 0.5) * (RANDOM_SEGMENT_COMPONENT_MAX - RANDOM_SEGMENT_COMPONENT_MIN);
-    var dy = RANDOM_SEGMENT_COMPONENT_MIN + 2 * (Math.random() - 0.5) * (RANDOM_SEGMENT_COMPONENT_MAX - RANDOM_SEGMENT_COMPONENT_MIN);
-    var dz = RANDOM_SEGMENT_COMPONENT_MIN + 2 * (Math.random() - 0.5) * (RANDOM_SEGMENT_COMPONENT_MAX - RANDOM_SEGMENT_COMPONENT_MIN);
+    var dx = 2 * (Math.random() - 0.5) * (RANDOM_SEGMENT_COMPONENT_MAX - RANDOM_SEGMENT_COMPONENT_MIN);
+    var dy = 2 * (Math.random() - 0.5) * (RANDOM_SEGMENT_COMPONENT_MAX - RANDOM_SEGMENT_COMPONENT_MIN);
+    var dz = 2 * (Math.random() - 0.5) * (RANDOM_SEGMENT_COMPONENT_MAX - RANDOM_SEGMENT_COMPONENT_MIN);
     this.addChild(this.x + dx, this.y + dy, this.z + dz).addRandomTree(segmentBudgetPerChild, depth+1);
   }
 }
