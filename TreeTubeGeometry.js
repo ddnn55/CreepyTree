@@ -19,7 +19,7 @@ THREE.TreeTubeGeometry = function( treeCurve, segments, radius, radiusSegments, 
   
   this.path = path;
   this.segments = segments || 64;
-  this.radius = radius || 1;
+  this.radius = radius || 10;
   this.radiusSegments = radiusSegments || 8;
   this.closed = false;
 
@@ -53,17 +53,15 @@ function makeExtrudedGeometryForTree(tree, options)
     var segmentGeometry = makeExtrudedGeometryForSegment(tree, child, options.segmentDivisionSize, options.radiusSegments);
     for(var f = 0; f < segmentGeometry.faces.length; f++)
     {
-      segmentGeometry.faces[f].a += geometry.faces.length;
-      segmentGeometry.faces[f].b += geometry.faces.length;
-      segmentGeometry.faces[f].c += geometry.faces.length;
+      segmentGeometry.faces[f].a += geometry.vertices.length;
+      segmentGeometry.faces[f].b += geometry.vertices.length;
+      segmentGeometry.faces[f].c += geometry.vertices.length;
       if(segmentGeometry.faces[f] instanceof THREE.Face4)
-        segmentGeometry.faces[f].d += geometry.faces.length;
+        segmentGeometry.faces[f].d += geometry.vertices.length;
     }
-    console.log(geometry.vertices, segmentGeometry.vertices)
     
     geometry.vertices = geometry.vertices.concat(segmentGeometry.vertices);
     geometry.faces = geometry.faces.concat(segmentGeometry.faces);
-    console.log(geometry.vertices);
     options.existingGeometry = geometry;
     makeExtrudedGeometryForTree(child, options);
   }
@@ -85,9 +83,8 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
   var curveNormal = normalToVec3(curveTangent);
   var curveBinormal = (new THREE.Vector3()).cross(curveNormal, curveTangent).normalize();
   
-  var numberOfDivisions = segmentLength / segmentDivisionSize;
-  console.log(segmentLength, numberOfDivisions);
-  for(var d = 0; d < numberOfDivisions; d++)
+  var numberOfDivisions = Math.floor(segmentLength / segmentDivisionSize);
+  for(var d = 0; d <= numberOfDivisions; d++)
   {
     var fraction = d / numberOfDivisions;
     var curvePos = aToB.clone().multiplyScalar(fraction).addSelf(nodeA);
