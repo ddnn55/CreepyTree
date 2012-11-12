@@ -83,7 +83,7 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
   var curveNormal = normalToVec3(curveTangent);
   var curveBinormal = (new THREE.Vector3()).cross(curveNormal, curveTangent).normalize();
   
-  var numberOfDivisions = Math.floor(segmentLength / segmentDivisionSize);
+  var numberOfDivisions = Math.ceil(segmentLength / segmentDivisionSize);
   for(var d = 0; d <= numberOfDivisions; d++)
   {
     var fraction = d / numberOfDivisions;
