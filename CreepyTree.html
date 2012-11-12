@@ -123,8 +123,10 @@
 
 			extrudePath = splines[value];
 
-			//tube = new THREE.TubeGeometry(extrudePath, segments, 2, radiusSegments, closed2, debug);
-			tube = new THREE.TreeTubeGeometry(extrudePath, segments, 2, radiusSegments, closed2, debug);
+			if(extrudePath instanceof TreeCurve)
+			  tube = new THREE.TreeTubeGeometry(extrudePath, segments, 2, radiusSegments, closed2, debug);
+			else
+			  tube = new THREE.TubeGeometry(extrudePath, segments, 2, radiusSegments, closed2, debug);
                         console.log(tube);
 
 			addGeometry(tube, 0xff00ff);
@@ -348,7 +350,7 @@
 		}
 
 		function render() {
-
+			/*
 			// Try Animate Camera Along Spline
 			var time = Date.now();
 			var looptime = 20 * 1000;
@@ -392,7 +394,7 @@
 			splineCamera.matrix.lookAt(splineCamera.position, lookAt, normal);
 			splineCamera.rotation.setEulerFromRotationMatrix(splineCamera.matrix, splineCamera.eulerOrder);
 
-			cameraHelper.update();
+			cameraHelper.update(); */
 
 			parent.rotation.y += ( targetRotation - parent.rotation.y ) * 0.05;
 

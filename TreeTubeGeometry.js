@@ -5,7 +5,7 @@
  *
  * Modified from the TorusKnotGeometry by @oosmoxiecode
  *
- * Creates a tube which extrudes along a 3d spline
+ * Creates a tube which extrudes along a 3d, branching curve
  *
  * Uses parallel transport frames as described in
  * http://www.cs.indiana.edu/pub/techreports/TR425.pdf
@@ -13,10 +13,10 @@
 
 THREE.TreeTubeGeometry = function( treeCurve, segments, radius, radiusSegments, closed, debug ) {
 
-  var path = treeCurve;
-
   THREE.Geometry.call( this );
 
+  var path = treeCurve;
+  
   this.path = path;
   this.segments = segments || 64;
   this.radius = radius || 1;
@@ -27,115 +27,55 @@ THREE.TreeTubeGeometry = function( treeCurve, segments, radius, radiusSegments, 
 
   this.grid = [];
 
-  var scope = this,
+  var _this = this;
 
-    tangent,
-    normal,
-    binormal,
+  var geometry = makeExtrudedGeometryForTree(treeCurve.root);
+  this.vertices = geometry.vertices;
+  this.faces = geometry.faces;
+  
 
-    //numpoints = this.segments + 1,
-
-    x, y, z,
-    tx, ty, tz,
-    u, v,
-
-    cx, cy,
-    pos, pos2 = new THREE.Vector3(),
-    i, j,
-    ip, jp,
-    a, b, c, d,
-    uva, uvb, uvc, uvd;
-
-  var segmentsFrames = treeCurve.mapSegments(function(edge) { return new THREE.TubeGeometry.FrenetFrames(edge.path, edge.segments, false) });
-
-
-  //var tangents = frames.tangents;
-  //var normals = frames.normals;
-  //var binormals = frames.binormals;
-
-  // proxy internals
-  //this.tangents = tangents;
-  //this.normals = normals;
-  //this.binormals = binormals;
-  this.segmentsFrames = segmentsFrames;
-
-  function vert( x, y, z ) {
-
-    return scope.vertices.push( new THREE.Vector3( x, y, z ) ) - 1;
-
-  }
-
-
-  // consruct the grid
-
-  for ( i = 0; i < numpoints; i++ ) {
-
-    this.grid[ i ] = [];
-
-    u = i / ( numpoints - 1 );
-
-    pos = path.getPointAt( u );
-
-    tangent = tangents[ i ];
-    normal = normals[ i ];
-    binormal = binormals[ i ];
-
-    if ( this.debug ) {
-
-      this.debug.add( new THREE.ArrowHelper(tangent, pos, radius, 0x0000ff ) );
-      this.debug.add( new THREE.ArrowHelper(normal, pos, radius, 0xff0000 ) );
-      this.debug.add( new THREE.ArrowHelper(binormal, pos, radius, 0x00ff00 ) );
-
-    }
-
-    for ( j = 0; j < this.radiusSegments; j++ ) {
-
-      v = j / this.radiusSegments * 2 * Math.PI;
-
-      cx = -this.radius * Math.cos( v ); // TODO: Hack: Negating it so it faces outside.
-      cy = this.radius * Math.sin( v );
-
-      pos2.copy( pos );
-      pos2.x += cx * normal.x + cy * binormal.x;
-      pos2.y += cx * normal.y + cy * binormal.y;
-      pos2.z += cx * normal.z + cy * binormal.z;
-
-      this.grid[ i ][ j ] = vert( pos2.x, pos2.y, pos2.z );
-
-    }
-  }
-
-
-  // construct the mesh
-
-  for ( i = 0; i < this.segments; i++ ) {
-
-    for ( j = 0; j < this.radiusSegments; j++ ) {
-
-      ip = ( closed ) ? (i + 1) % this.segments : i + 1;
-      jp = (j + 1) % this.radiusSegments;
-
-      a = this.grid[ i ][ j ];    // *** NOT NECESSARILY PLANAR ! ***
-      b = this.grid[ ip ][ j ];
-      c = this.grid[ ip ][ jp ];
-      d = this.grid[ i ][ jp ];
-
-      uva = new THREE.UV( i / this.segments, j / this.radiusSegments );
-      uvb = new THREE.UV( ( i + 1 ) / this.segments, j / this.radiusSegments );
-      uvc = new THREE.UV( ( i + 1 ) / this.segments, ( j + 1 ) / this.radiusSegments );
-      uvd = new THREE.UV( i / this.segments, ( j + 1 ) / this.radiusSegments );
-
-      this.faces.push( new THREE.Face4( a, b, c, d ) );
-      this.faceVertexUvs[ 0 ].push( [ uva, uvb, uvc, uvd ] );
-
-    }
-  }
+  
 
   this.computeCentroids();
   this.computeFaceNormals();
   this.computeVertexNormals();
 
 };
+
+function makeExtrudedGeometryForTree(tree, existingGeometry)
+{
+  var geometry = existingGeometry || { vertices: [], faces: [] };
+  console.log(tree);
+
+  for(var c = 0; c < tree.children.length; c++)
+  {
+    var child = tree.children[c];
+    var segmentGeometry = makeExtrudedGeometryForSegment(tree, child);
+    for(var f = 0; f < segmentGeometry.faces.length; f++)
+    {
+      segmentGeometry.faces[f].a += geometry.faces.length;
+      segmentGeometry.faces[f].b += geometry.faces.length;
+      segmentGeometry.faces[f].c += geometry.faces.length;
+      if(segmentGeometry.faces[f] instanceof THREE.Face4)
+        segmentGeometry.faces[f].d += geometry.faces.length;
+    }
+
+    geometry.vertices = geometry.vertices.concat(segmentGeometry.vertices);
+    geometry.faces = geometry.faces.concat(segmentGeometry.faces);
+    makeExtrudedGeometryForTree(child, geometry);
+  }
+
+  
+  return geometry;
+}
+
+function makeExtrudedGeometryForSegment(nodeA, nodeB)
+{
+  var geometry = { vertices: [], faces: [] };
+  //var segmentsFrames = treeCurve.mapSegments(function(edge) { return new THREE.TubeGeometry.FrenetFrames(edge.path, edge.segments, false) });
+  console.log('length of segment', nodeA.distanceTo(nodeB));
+  return geometry;
+}
 
 THREE.TreeTubeGeometry.prototype = Object.create( THREE.Geometry.prototype );
 
