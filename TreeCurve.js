@@ -19,7 +19,9 @@ TreeCurveNode = function(x, y, z)
 
 TreeCurveNode.prototype.addChild = function(x, y, z)
 {
-  this.children.push( new TreeCurveNode( x, y, z ) );
+  var newNode = new TreeCurveNode( x, y, z );
+  this.children.push( newNode );
+  return this.children[this.children.length-1];
 }
 
 TreeCurveNode.prototype.to = function(other)

@@ -43,13 +43,14 @@ THREE.TreeTubeGeometry = function( treeCurve, segments, radius, radiusSegments, 
 
 function makeExtrudedGeometryForTree(tree, options)
 {
+  console.log('-----');
+  
   var geometry = options.existingGeometry || { vertices: [], faces: [] };
 
   for(var c = 0; c < tree.children.length; c++)
   {
     var child = tree.children[c];
     var segmentGeometry = makeExtrudedGeometryForSegment(tree, child, options.segmentDivisionSize, options.radiusSegments);
-    console.log('segmentGeometry unshifted', segmentGeometry);
     for(var f = 0; f < segmentGeometry.faces.length; f++)
     {
       segmentGeometry.faces[f].a += geometry.faces.length;
@@ -58,10 +59,13 @@ function makeExtrudedGeometryForTree(tree, options)
       if(segmentGeometry.faces[f] instanceof THREE.Face4)
         segmentGeometry.faces[f].d += geometry.faces.length;
     }
-
+    console.log(geometry.vertices, segmentGeometry.vertices)
+    
     geometry.vertices = geometry.vertices.concat(segmentGeometry.vertices);
     geometry.faces = geometry.faces.concat(segmentGeometry.faces);
-    makeExtrudedGeometryForTree(child, {existingGeometry: geometry});
+    console.log(geometry.vertices);
+    options.existingGeometry = geometry;
+    makeExtrudedGeometryForTree(child, options);
   }
 
   
@@ -74,20 +78,19 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
   
   var segmentLength = nodeA.distanceTo(nodeB);
   //var segmentsFrames = treeCurve.mapSegments(function(edge) { return new THREE.TubeGeometry.FrenetFrames(edge.path, edge.segments, false) });
-  console.log('length of segment', segmentLength);
-  
+ 
+
   var aToB = nodeA.to(nodeB);
   var curveTangent = aToB.clone().normalize();
   var curveNormal = normalToVec3(curveTangent);
   var curveBinormal = (new THREE.Vector3()).cross(curveNormal, curveTangent).normalize();
-  console.log('frenet', curveTangent, curveNormal, curveBinormal);
   
-  numberOfDivisions = segmentLength / segmentDivisionSize;
+  var numberOfDivisions = segmentLength / segmentDivisionSize;
+  console.log(segmentLength, numberOfDivisions);
   for(var d = 0; d < numberOfDivisions; d++)
   {
     var fraction = d / numberOfDivisions;
-    var curvePos = aToB.clone().multiplyScalar(fraction);
-    console.log('curvePos', curvePos);
+    var curvePos = aToB.clone().multiplyScalar(fraction).addSelf(nodeA);
     geometry.vertices = geometry.vertices.concat( makeCircleVertices(curvePos, curveNormal, curveBinormal, radiusSegments) );
 
     if(d > 0)
