@@ -22,6 +22,11 @@ TreeCurveNode.prototype.addChild = function(x, y, z)
   this.children.push( new TreeCurveNode( x, y, z ) );
 }
 
+TreeCurveNode.prototype.to = function(other)
+{
+  return new THREE.Vector3( other.x - this.x, other.y - this.y, other.z - this.z );
+}
+
 TreeCurveNode.prototype.distanceTo = function(other)
 {
   var dx = this.x - other.x;

@@ -49,6 +49,7 @@ function makeExtrudedGeometryForTree(tree, options)
   {
     var child = tree.children[c];
     var segmentGeometry = makeExtrudedGeometryForSegment(tree, child, options.segmentDivisionSize, options.radiusSegments);
+    console.log('segmentGeometry unshifted', segmentGeometry);
     for(var f = 0; f < segmentGeometry.faces.length; f++)
     {
       segmentGeometry.faces[f].a += geometry.faces.length;
@@ -60,7 +61,7 @@ function makeExtrudedGeometryForTree(tree, options)
 
     geometry.vertices = geometry.vertices.concat(segmentGeometry.vertices);
     geometry.faces = geometry.faces.concat(segmentGeometry.faces);
-    makeExtrudedGeometryForTree(child, geometry);
+    makeExtrudedGeometryForTree(child, {existingGeometry: geometry});
   }
 
   
@@ -74,8 +75,79 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
   var segmentLength = nodeA.distanceTo(nodeB);
   //var segmentsFrames = treeCurve.mapSegments(function(edge) { return new THREE.TubeGeometry.FrenetFrames(edge.path, edge.segments, false) });
   console.log('length of segment', segmentLength);
-  console.log('number of divisions', segmentLength / segmentDivisionSize);
+  
+  var aToB = nodeA.to(nodeB);
+  var curveTangent = aToB.clone().normalize();
+  var curveNormal = normalToVec3(curveTangent);
+  var curveBinormal = (new THREE.Vector3()).cross(curveNormal, curveTangent).normalize();
+  console.log('frenet', curveTangent, curveNormal, curveBinormal);
+  
+  numberOfDivisions = segmentLength / segmentDivisionSize;
+  for(var d = 0; d < numberOfDivisions; d++)
+  {
+    var fraction = d / numberOfDivisions;
+    var curvePos = aToB.clone().multiplyScalar(fraction);
+    console.log('curvePos', curvePos);
+    geometry.vertices = geometry.vertices.concat( makeCircleVertices(curvePos, curveNormal, curveBinormal, radiusSegments) );
+
+    if(d > 0)
+    {
+      for(var f = 0; f < radiusSegments; f++)
+      {
+        var radiusIndexA = f;
+	var radiusIndexB = (f+1) % radiusSegments;
+        geometry.faces.push(new THREE.Face4(
+	  (d - 1) * radiusSegments + radiusIndexA,
+	  (d - 1) * radiusSegments + radiusIndexB,
+	  d       * radiusSegments + radiusIndexB,
+	  d       * radiusSegments + radiusIndexA
+	));
+      }
+    }
+  }
   return geometry;
+}
+
+function makeCircleVertices(center, basisX, basisY, radiusSegments)
+{
+  var vertices = [];
+  for(var v = 0; v < radiusSegments; v++)
+  {
+    var angle = Math.PI * 2 * v / radiusSegments;
+    var xVec = basisX.clone().multiplyScalar( Math.cos(angle) );
+    var yVec = basisY.clone().multiplyScalar( Math.sin(angle) );
+    var fromCenter = (new THREE.Vector3()).add(xVec, yVec);
+    vertices.push( center.clone().addSelf(fromCenter) );
+  }
+  return vertices;
+}
+
+function normalToVec3(vec) {
+  var normal = new THREE.Vector3();
+  var smallest = Number.MAX_VALUE;
+  var tx = Math.abs( vec.x );
+  var ty = Math.abs( vec.y );
+  var tz = Math.abs( vec.z );
+
+  if ( tx <= smallest ) {
+    smallest = tx;
+    normal.set( 1, 0, 0 );
+  }
+
+  if ( ty <= smallest ) {
+    smallest = ty;
+    normal.set( 0, 1, 0 );
+  }
+
+  if ( tz <= smallest ) {
+    normal.set( 0, 0, 1 );
+  }
+
+  var intermediateVec = (new THREE.Vector3()).cross( vec, normal ).normalize();
+
+  normal.cross( vec, intermediateVec );
+
+  return normal;
 }
 
 THREE.TreeTubeGeometry.prototype = Object.create( THREE.Geometry.prototype );
