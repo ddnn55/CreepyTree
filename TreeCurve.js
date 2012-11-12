@@ -3,6 +3,11 @@ TreeCurve = function(x, y, z)
   this.root = new TreeCurveNode(x, y, z);
 }
 
+TreeCurve.prototype.totalLength = function()
+{
+  return this.root.totalLength();
+}
+
 TreeCurveNode = function(x, y, z)
 {
   this.x = x;
@@ -23,4 +28,12 @@ TreeCurveNode.prototype.distanceTo = function(other)
   var dy = this.y - other.y;
   var dz = this.z - other.z;
   return Math.sqrt( dx * dx + dy * dy + dz * dz );
+}
+
+TreeCurveNode.prototype.totalLength = function()
+{
+  var _this = this;
+  return this.children
+    .map(function(child) { return _this.distanceTo(child) + child.totalLength() })
+    .reduce(function(a, b) { return a+b }, 0.0);
 }

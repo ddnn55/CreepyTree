@@ -21,20 +21,19 @@ THREE.TreeTubeGeometry = function( treeCurve, segments, radius, radiusSegments, 
   this.segments = segments || 64;
   this.radius = radius || 1;
   this.radiusSegments = radiusSegments || 8;
-  this.closed = closed || false;
+  this.closed = false;
 
   if ( debug ) this.debug = new THREE.Object3D();
 
-  this.grid = [];
-
   var _this = this;
 
-  var geometry = makeExtrudedGeometryForTree(treeCurve.root);
+  var geometry = makeExtrudedGeometryForTree(treeCurve.root, {
+    segmentDivisionSize: treeCurve.totalLength() / segments,
+    radiusSegments: radiusSegments
+  });
+
   this.vertices = geometry.vertices;
   this.faces = geometry.faces;
-  
-
-  
 
   this.computeCentroids();
   this.computeFaceNormals();
@@ -42,15 +41,14 @@ THREE.TreeTubeGeometry = function( treeCurve, segments, radius, radiusSegments, 
 
 };
 
-function makeExtrudedGeometryForTree(tree, existingGeometry)
+function makeExtrudedGeometryForTree(tree, options)
 {
-  var geometry = existingGeometry || { vertices: [], faces: [] };
-  console.log(tree);
+  var geometry = options.existingGeometry || { vertices: [], faces: [] };
 
   for(var c = 0; c < tree.children.length; c++)
   {
     var child = tree.children[c];
-    var segmentGeometry = makeExtrudedGeometryForSegment(tree, child);
+    var segmentGeometry = makeExtrudedGeometryForSegment(tree, child, options.segmentDivisionSize, options.radiusSegments);
     for(var f = 0; f < segmentGeometry.faces.length; f++)
     {
       segmentGeometry.faces[f].a += geometry.faces.length;
@@ -69,11 +67,14 @@ function makeExtrudedGeometryForTree(tree, existingGeometry)
   return geometry;
 }
 
-function makeExtrudedGeometryForSegment(nodeA, nodeB)
+function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiusSegments)
 {
   var geometry = { vertices: [], faces: [] };
+  
+  var segmentLength = nodeA.distanceTo(nodeB);
   //var segmentsFrames = treeCurve.mapSegments(function(edge) { return new THREE.TubeGeometry.FrenetFrames(edge.path, edge.segments, false) });
-  console.log('length of segment', nodeA.distanceTo(nodeB));
+  console.log('length of segment', segmentLength);
+  console.log('number of divisions', segmentLength / segmentDivisionSize);
   return geometry;
 }
 
