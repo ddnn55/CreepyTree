@@ -61,8 +61,11 @@
 
 		var treeCurve = new TreeCurve(0.0, 0.0, 0.0);
 		treeCurve.root.addChild(10.0, 10.0, 10.0).addChild(20.0, -30.0, 40.0).addChild(0.0, 0.0, 30.0);
+		treeCurve.root.children[0].addChild(-30.0, 30.0, 0.0);
 		treeCurve.root.addChild(-30.0, 30.0, 30.0);
 		treeCurve.root.addChild(30.0, -30.0, 30.0);
+
+		treeCurve = TreeCurve.random(50);
 
 		// Keep a dictionary of Curve instances
 		var splines = {

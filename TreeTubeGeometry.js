@@ -43,8 +43,6 @@ THREE.TreeTubeGeometry = function( treeCurve, segments, radius, radiusSegments, 
 
 function makeExtrudedGeometryForTree(tree, options)
 {
-  console.log('-----');
-  
   var geometry = options.existingGeometry || { vertices: [], faces: [] };
 
   for(var c = 0; c < tree.children.length; c++)

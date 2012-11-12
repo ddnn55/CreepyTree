@@ -1,6 +1,16 @@
+var RANDOM_SEGMENT_COMPONENT_MAX = 10.0;
+var RANDOM_SEGMENT_COMPONENT_MIN = 3.0;
+
 TreeCurve = function(x, y, z)
 {
   this.root = new TreeCurveNode(x, y, z);
+}
+
+TreeCurve.random = function(segments)
+{
+  var curve = new TreeCurve(0.0, 0.0, 0.0);
+  curve.root.addRandomTree(segments);
+  return curve;
 }
 
 TreeCurve.prototype.totalLength = function()
@@ -22,6 +32,34 @@ TreeCurveNode.prototype.addChild = function(x, y, z)
   var newNode = new TreeCurveNode( x, y, z );
   this.children.push( newNode );
   return this.children[this.children.length-1];
+}
+
+TreeCurveNode.prototype.addRandomTree = function(segments, depth)
+{
+  depth = depth || 0;
+
+
+  var branches = Math.ceil(Math.min(segments, (Math.random() * 4)));
+  if(branches == 0)
+    return;
+
+  segments -= branches;
+  var segmentBudgetPerChild = Math.floor(segments / branches);
+  
+  
+  if(depth > 10)
+  {
+    console.log('budget', segmentBudgetPerChild);
+    //return; // hack. why does this happen
+  }
+  
+  for(var b = 0; b < branches; b++)
+  {
+    var dx = RANDOM_SEGMENT_COMPONENT_MIN + 2 * (Math.random() - 0.5) * (RANDOM_SEGMENT_COMPONENT_MAX - RANDOM_SEGMENT_COMPONENT_MIN);
+    var dy = RANDOM_SEGMENT_COMPONENT_MIN + 2 * (Math.random() - 0.5) * (RANDOM_SEGMENT_COMPONENT_MAX - RANDOM_SEGMENT_COMPONENT_MIN);
+    var dz = RANDOM_SEGMENT_COMPONENT_MIN + 2 * (Math.random() - 0.5) * (RANDOM_SEGMENT_COMPONENT_MAX - RANDOM_SEGMENT_COMPONENT_MIN);
+    this.addChild(this.x + dx, this.y + dy, this.z + dz).addRandomTree(segmentBudgetPerChild, depth+1);
+  }
 }
 
 TreeCurveNode.prototype.to = function(other)
