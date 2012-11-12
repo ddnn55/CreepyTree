@@ -11,26 +11,33 @@
  * http://www.cs.indiana.edu/pub/techreports/TR425.pdf
  */
 
-THREE.TreeTubeGeometry = function( treeCurve, segments, radius, radiusSegments, closed, debug ) {
+THREE.TreeTubeGeometry = function( treeCurve, options ) {
+
+  options = options || {};
 
   THREE.Geometry.call( this );
 
   var path = treeCurve;
   
   this.path = path;
-  this.segments = segments || 64;
-  this.radius = radius || 10;
-  this.radiusSegments = radiusSegments || 8;
+  this.segments = options.segments || 64;
+  this.radius = options.radius || 1;
+  this.radiusSegments = options.radiusSegments || 8;
   this.closed = false;
 
   if ( debug ) this.debug = new THREE.Object3D();
 
   var _this = this;
 
-  var geometry = makeExtrudedGeometryForTree(treeCurve.root, {
-    segmentDivisionSize: treeCurve.totalLength() / segments,
-    radiusSegments: radiusSegments
-  });
+  options.segmentDivisionSize = treeCurve.totalLength() / this.segments;
+  options.radiusSegments = this.radiusSegments;
+  options.existingGeometry = { vertices: [], faces: [] };
+
+  var geometry = makeExtrudedGeometryForTree(treeCurve.root, options);
+  /*{
+    segmentDivisionSize: treeCurve.totalLength() / this.segments,
+    radiusSegments: this.radiusSegments
+  });*/
 
   this.vertices = geometry.vertices;
   this.faces = geometry.faces;
@@ -48,7 +55,7 @@ function makeExtrudedGeometryForTree(tree, options)
   for(var c = 0; c < tree.children.length; c++)
   {
     var child = tree.children[c];
-    var segmentGeometry = makeExtrudedGeometryForSegment(tree, child, options.segmentDivisionSize, options.radiusSegments);
+    var segmentGeometry = makeExtrudedGeometryForSegment(tree, child, options.segmentDivisionSize, options.radiusSegments, options.radius);
     for(var f = 0; f < segmentGeometry.faces.length; f++)
     {
       segmentGeometry.faces[f].a += geometry.vertices.length;
@@ -68,7 +75,7 @@ function makeExtrudedGeometryForTree(tree, options)
   return geometry;
 }
 
-function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiusSegments)
+function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiusSegments, radius)
 {
   var geometry = { vertices: [], faces: [] };
   
@@ -86,7 +93,7 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
   {
     var fraction = d / numberOfDivisions;
     var curvePos = aToB.clone().multiplyScalar(fraction).addSelf(nodeA);
-    geometry.vertices = geometry.vertices.concat( makeCircleVertices(curvePos, curveNormal, curveBinormal, radiusSegments) );
+    geometry.vertices = geometry.vertices.concat( makeCircleVertices(curvePos, curveNormal, curveBinormal, radiusSegments, radius) );
 
     if(d > 0)
     {
@@ -106,14 +113,14 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
   return geometry;
 }
 
-function makeCircleVertices(center, basisX, basisY, radiusSegments)
+function makeCircleVertices(center, basisX, basisY, radiusSegments, radius)
 {
   var vertices = [];
   for(var v = 0; v < radiusSegments; v++)
   {
     var angle = Math.PI * 2 * v / radiusSegments;
-    var xVec = basisX.clone().multiplyScalar( Math.cos(angle) );
-    var yVec = basisY.clone().multiplyScalar( Math.sin(angle) );
+    var xVec = basisX.clone().multiplyScalar( radius * Math.cos(angle) );
+    var yVec = basisY.clone().multiplyScalar( radius * Math.sin(angle) );
     var fromCenter = (new THREE.Vector3()).add(xVec, yVec);
     vertices.push( center.clone().addSelf(fromCenter) );
   }
