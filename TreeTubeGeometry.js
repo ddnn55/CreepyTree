@@ -21,13 +21,12 @@ THREE.TreeTubeGeometry = function( treeCurve, options ) {
 
   var _this = this;
 
-  options.treeDepth = treeCurve.maxDepth();
-  options.startingDepth = 0.0;
+  options.maxDepth = treeCurve.maxDepth();
   options.segmentDivisionSize = treeCurve.totalLength() / this.segments;
   options.radiusSegments = this.radiusSegments;
-  options.existingGeometry = { vertices: [], faces: [] };
+  options.existingGeometry = { vertices: [], faces: [], treeDepths: [] };
 
-  var geometry = makeExtrudedGeometryForTree(treeCurve.root, options);
+  var geometry = makeExtrudedGeometryForTree(treeCurve.root, options, 0.0);
   /*{
     segmentDivisionSize: treeCurve.totalLength() / this.segments,
     radiusSegments: this.radiusSegments
@@ -35,7 +34,10 @@ THREE.TreeTubeGeometry = function( treeCurve, options ) {
 
   this.vertices = geometry.vertices;
   this.faces = geometry.faces;
-  //this.faceVertexUvs[1] = geometry.treeDepths;
+  this.faceVertexUvs[0] = geometry.treeDepths;
+  this.faceVertexUvs[1] = geometry.treeDepths;
+
+  console.log(geometry.treeDepths);
 
   this.computeCentroids();
   this.computeFaceNormals();
@@ -43,14 +45,14 @@ THREE.TreeTubeGeometry = function( treeCurve, options ) {
 
 };
 
-function makeExtrudedGeometryForTree(tree, options)
+function makeExtrudedGeometryForTree(tree, options, startingDepth)
 {
-  var geometry = options.existingGeometry || { vertices: [], faces: [] };
+  var geometry = options.existingGeometry || { vertices: [], faces: [], treeDepths: [] };
 
   for(var c = 0; c < tree.children.length; c++)
   {
     var child = tree.children[c];
-    var segmentGeometry = makeExtrudedGeometryForSegment(tree, child, options.segmentDivisionSize, options.radiusSegments, options.radius, options.startingDepth + tree.distanceTo(child));
+    var segmentGeometry = makeExtrudedGeometryForSegment(tree, child, options.segmentDivisionSize, options.radiusSegments, options.radius, startingDepth, options.maxDepth);
     for(var f = 0; f < segmentGeometry.faces.length; f++)
     {
       segmentGeometry.faces[f].a += geometry.vertices.length;
@@ -62,16 +64,20 @@ function makeExtrudedGeometryForTree(tree, options)
     
     geometry.vertices = geometry.vertices.concat(segmentGeometry.vertices);
     geometry.faces = geometry.faces.concat(segmentGeometry.faces);
+    geometry.treeDepths = geometry.treeDepths.concat(segmentGeometry.treeDepths);
+    
     options.existingGeometry = geometry;
-    makeExtrudedGeometryForTree(child, options);
+
+    makeExtrudedGeometryForTree(child, options, startingDepth + tree.distanceTo(child));
   }
 
   
   return geometry;
 }
 
-function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiusSegments, radius, startingDepth)
+function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiusSegments, radius, startingDepth, maxDepth)
 {
+
   var geometry = { vertices: [], faces: [], treeDepths: [] };
   
   var segmentLength = nodeA.distanceTo(nodeB);
@@ -101,11 +107,16 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
 	  (d - 1) * radiusSegments + radiusIndexB,
 	  (d - 1) * radiusSegments + radiusIndexA
 	));
+
+        var previousDepth = startingDepth + previousFraction * segmentLength;
+	var currentDepth =  startingDepth + fraction         * segmentLength;
+	var previousDepthFraction = previousDepth / maxDepth;
+	var currentDepthFraction = currentDepth / maxDepth;
 	geometry.treeDepths.push([
-	  new THREE.UV(startingDepth + previousFraction * segmentLength, 0.0),
-	  new THREE.UV(startingDepth + fraction         * segmentLength, 0.0),
-	  new THREE.UV(startingDepth + fraction         * segmentLength, 0.0),
-	  new THREE.UV(startingDepth + previousFraction * segmentLength, 0.0)
+	  new THREE.UV(currentDepthFraction, 0.0),
+	  new THREE.UV(currentDepthFraction, 0.0),
+	  new THREE.UV(previousDepthFraction, 0.0),
+	  new THREE.UV(previousDepthFraction, 0.0)
 	]);
       }
     }

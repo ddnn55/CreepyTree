@@ -16275,7 +16275,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			material = getBufferMaterial( object, geometryGroup ),
 
-			uvType = bufferGuessUVType( material ),
+			//uvType = bufferGuessUVType( material ),
+			uvType = true, // david.stolarsky@gmail.com 12-11-2012 i want a custom float vertex attribute, gonna use UVs, maybe there's a better way?
 			normalType = bufferGuessNormalType( material ),
 			vertexColorType = bufferGuessVertexColorType( material );
 
