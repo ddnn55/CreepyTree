@@ -114,22 +114,22 @@
 
     function addTube(options) {
 
-      var value = document.getElementById('dropdown').value;
+      //var value = document.getElementById('dropdown').value;
 
-      var segments = parseInt(document.getElementById('segments').value);
+      //var segments = parseInt(document.getElementById('segments').value);
       closed2 = document.getElementById('closed').checked;
       debug = document.getElementById('debug').checked;
 
-      var radiusSegments = parseInt(document.getElementById('radiusSegments').value);
+      //var radiusSegments = parseInt(document.getElementById('radiusSegments').value);
 
-      console.log('adding tube', value, closed2, debug, radiusSegments);
+      //console.log('adding tube', value, closed2, debug, radiusSegments);
       if (tubeMesh)
       {
         console.log('removing', tubeMesh);
         parent.remove(tubeMesh);
       }
 
-      extrudePath = splines[value];
+      extrudePath = treeCurve;
 
       if(extrudePath instanceof TreeCurve)
         tube = new THREE.TreeTubeGeometry(treeCurve, options);
@@ -204,13 +204,11 @@
       info.style.top = '10px';
       info.style.width = '100%';
       info.style.textAlign = 'center';
-      info.innerHTML = 'Spline Extrusion Examples by <a href="http://www.lab4games.net/zz85/blog">zz85</a><br/>Select spline:';
+      //info.innerHTML = 'Spline Extrusion Examples by <a href="http://www.lab4games.net/zz85/blog">zz85</a><br/>Select spline:';
 
-      info.innerHTML += dropdown;
+      //info.innerHTML += dropdown;
 
       info.innerHTML += '<br/>Scale: <select id="scale" onchange="setScale()"><option>1</option><option>2</option><option selected>4</option><option>6</option><option>10</option></select>';
-      info.innerHTML += '<br/>Extrusion Segments: <select onchange="addTube()" id="segments"><option>10</option><option>20</option><option>50</option><option>100</option><option>200</option><option selected>400</option></select>';
-      info.innerHTML += '<br/>Radius Segments: <select id="radiusSegments" onchange="addTube()"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option selected>12</option></select>';
       info.innerHTML += '<br/>Debug normals: <input id="debug" type="checkbox" onchange="addTube()"  /> Closed:<input id="closed" onchange="addTube()" type="checkbox" checked />';
 
       info.innerHTML += '<br/><br/><input id="animation" type="button" onclick="animateCamera(true)" value="Camera Spline Animation View: OFF"/><br/> Look Ahead <input id="lookAhead" type="checkbox" onchange="animateCamera()" /> Camera Helper <input id="cameraHelper" type="checkbox" onchange="animateCamera()" />';
@@ -416,7 +414,9 @@
     {
       var options = {
         radius: 1,
-	radiusSegments: 10
+	radiusSegments: 10,
+	segments: 100,
+	growth: 1.0
       };
       
       function update() {
@@ -427,6 +427,8 @@
       var gui = new dat.GUI();
       gui.add(options, 'radius', 0.5, 10.0).onChange(update);
       gui.add(options, 'radiusSegments', 3, 16).onChange(update);
+      gui.add(options, 'segments', 10, 500).onChange(update);
+      gui.add(options, 'growth', 0.0, 1.0).onChange();
       //gui.add(nil, 'displayOutline');
       //gui.add(nil, 'explode');
 
