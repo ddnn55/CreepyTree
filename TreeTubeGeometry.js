@@ -1,14 +1,6 @@
 /**
- * @author WestLangley / https://github.com/WestLangley
- * @author zz85 / https://github.com/zz85
- * @author miningold / https://github.com/miningold
- *
- * Modified from the TorusKnotGeometry by @oosmoxiecode
- *
  * Creates a tube which extrudes along a 3d, branching curve
  *
- * Uses parallel transport frames as described in
- * http://www.cs.indiana.edu/pub/techreports/TR425.pdf
  */
 
 THREE.TreeTubeGeometry = function( treeCurve, options ) {
@@ -29,6 +21,8 @@ THREE.TreeTubeGeometry = function( treeCurve, options ) {
 
   var _this = this;
 
+  options.treeDepth = treeCurve.maxDepth();
+  options.startingDepth = 0.0;
   options.segmentDivisionSize = treeCurve.totalLength() / this.segments;
   options.radiusSegments = this.radiusSegments;
   options.existingGeometry = { vertices: [], faces: [] };
@@ -41,6 +35,7 @@ THREE.TreeTubeGeometry = function( treeCurve, options ) {
 
   this.vertices = geometry.vertices;
   this.faces = geometry.faces;
+  //this.faceVertexUvs[1] = geometry.treeDepths;
 
   this.computeCentroids();
   this.computeFaceNormals();
@@ -55,7 +50,7 @@ function makeExtrudedGeometryForTree(tree, options)
   for(var c = 0; c < tree.children.length; c++)
   {
     var child = tree.children[c];
-    var segmentGeometry = makeExtrudedGeometryForSegment(tree, child, options.segmentDivisionSize, options.radiusSegments, options.radius);
+    var segmentGeometry = makeExtrudedGeometryForSegment(tree, child, options.segmentDivisionSize, options.radiusSegments, options.radius, options.startingDepth + tree.distanceTo(child));
     for(var f = 0; f < segmentGeometry.faces.length; f++)
     {
       segmentGeometry.faces[f].a += geometry.vertices.length;
@@ -75,14 +70,12 @@ function makeExtrudedGeometryForTree(tree, options)
   return geometry;
 }
 
-function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiusSegments, radius)
+function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiusSegments, radius, startingDepth)
 {
-  var geometry = { vertices: [], faces: [] };
+  var geometry = { vertices: [], faces: [], treeDepths: [] };
   
   var segmentLength = nodeA.distanceTo(nodeB);
-  //var segmentsFrames = treeCurve.mapSegments(function(edge) { return new THREE.TubeGeometry.FrenetFrames(edge.path, edge.segments, false) });
  
-
   var aToB = nodeA.to(nodeB);
   var curveTangent = aToB.clone().normalize();
   var curveNormal = normalToVec3(curveTangent);
@@ -97,6 +90,7 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
 
     if(d > 0)
     {
+      var previousFraction = (d-1) / numberOfDivisions;
       for(var f = 0; f < radiusSegments; f++)
       {
         var radiusIndexA = f;
@@ -107,6 +101,12 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
 	  (d - 1) * radiusSegments + radiusIndexB,
 	  (d - 1) * radiusSegments + radiusIndexA
 	));
+	geometry.treeDepths.push([
+	  new THREE.UV(startingDepth + previousFraction * segmentLength, 0.0),
+	  new THREE.UV(startingDepth + fraction         * segmentLength, 0.0),
+	  new THREE.UV(startingDepth + fraction         * segmentLength, 0.0),
+	  new THREE.UV(startingDepth + previousFraction * segmentLength, 0.0)
+	]);
       }
     }
   }

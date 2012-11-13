@@ -18,6 +18,11 @@ TreeCurve.prototype.totalLength = function()
   return this.root.totalLength();
 }
 
+TreeCurve.prototype.maxDepth = function()
+{
+  return this.root.maxDepth();
+}
+
 TreeCurveNode = function(x, y, z)
 {
   this.x = x;
@@ -81,4 +86,12 @@ TreeCurveNode.prototype.totalLength = function()
   return this.children
     .map(function(child) { return _this.distanceTo(child) + child.totalLength() })
     .reduce(function(a, b) { return a+b }, 0.0);
+}
+
+TreeCurveNode.prototype.maxDepth = function()
+{
+  var _this = this;
+  return this.children
+    .map(function(child) { return _this.distanceTo(child) + child.maxDepth() })
+    .reduce(function(a, b) { return Math.max(a, b) }, 0.0);
 }
