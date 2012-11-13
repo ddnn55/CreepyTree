@@ -19,6 +19,7 @@
     <script src="Curve.js"></script>
     <script src="TreeCurve.js"></script>
     <script src="TubeGeometry.js"></script>
+    <script src="CreepyTreeMaterial.js"></script>
     <script src="TreeTubeGeometry.js"></script>
     <script src="CameraHelper.js"></script>
 
@@ -125,7 +126,6 @@
       //console.log('adding tube', value, closed2, debug, radiusSegments);
       if (tubeMesh)
       {
-        console.log('removing', tubeMesh);
         parent.remove(tubeMesh);
       }
 
@@ -135,7 +135,6 @@
         tube = new THREE.TreeTubeGeometry(treeCurve, options);
       else
         tube = new THREE.TubeGeometry(extrudePath, segments, 2, radiusSegments, closed2, debug);
-                        console.log(tube);
 
       addGeometry(tube, 0xff00ff);
       setScale();
@@ -144,8 +143,7 @@
 
     function setScale() {
 
-      scale = parseInt( document.getElementById('scale').value );
-      tubeMesh.scale.set( scale, scale, scale );
+      //scale = parseInt( document.getElementById('scale').value );
 
     }
 
@@ -156,7 +154,7 @@
       // 3d shape
 
       tubeMesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [
-        new THREE.MeshLambertMaterial({
+        new CreepyTreeMaterial({
           color: color,
           opacity: geometry.debug ? 0.2 : 0.8,
           transparent: true
@@ -165,6 +163,7 @@
           color: 0x000000,
           opacity: 0.5,
           wireframe: true
+          //wireframe: false
       })]);
 
       if ( geometry.debug ) tubeMesh.add( geometry.debug );
@@ -208,7 +207,7 @@
 
       //info.innerHTML += dropdown;
 
-      info.innerHTML += '<br/>Scale: <select id="scale" onchange="setScale()"><option>1</option><option>2</option><option selected>4</option><option>6</option><option>10</option></select>';
+      //info.innerHTML += '<br/>Scale: <select id="scale" onchange="setScale()"><option>1</option><option>2</option><option selected>4</option><option>6</option><option>10</option></select>';
       info.innerHTML += '<br/>Debug normals: <input id="debug" type="checkbox" onchange="addTube()"  /> Closed:<input id="closed" onchange="addTube()" type="checkbox" checked />';
 
       info.innerHTML += '<br/><br/><input id="animation" type="button" onclick="animateCamera(true)" value="Camera Spline Animation View: OFF"/><br/> Look Ahead <input id="lookAhead" type="checkbox" onchange="animateCamera()" /> Camera Helper <input id="cameraHelper" type="checkbox" onchange="animateCamera()" />';
@@ -416,23 +415,34 @@
         radius: 1,
 	radiusSegments: 10,
 	segments: 100,
-	growth: 1.0
+	growth: 1.0,
+	scale: 5.0
       };
       
       function update() {
         options.radiusSegments = Math.ceil(options.radiusSegments);
         addTube(options);
+	tubeMesh.scale.set(options.scale, options.scale, options.scale);
       }
       
       var gui = new dat.GUI();
-      gui.add(options, 'radius', 0.5, 10.0).onChange(update);
-      gui.add(options, 'radiusSegments', 3, 16).onChange(update);
-      gui.add(options, 'segments', 10, 500).onChange(update);
-      gui.add(options, 'growth', 0.0, 1.0).onChange();
+      var viewFolder = gui.addFolder('View');
+      viewFolder.add(options, 'scale', 1.0, 10.0).onChange(function(scale) {
+        tubeMesh.scale.set( scale, scale, scale );
+      });
+      var meshFolder = gui.addFolder('Mesh');
+      meshFolder.add(options, 'radius', 0.5, 10.0).onChange(update);
+      meshFolder.add(options, 'radiusSegments', 3, 64).onChange(update);
+      meshFolder.add(options, 'segments', 10, 500).onChange(update);
+      meshFolder.add(options, 'growth', 0.0, 1.0).onChange();
+      
+      viewFolder.open();
+      meshFolder.open();
       //gui.add(nil, 'displayOutline');
       //gui.add(nil, 'explode');
 
       addTube(options);
+      update();
     }
 
   </script>
