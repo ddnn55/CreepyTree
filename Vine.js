@@ -255,11 +255,11 @@ var container, stats;
 	    "float eastValue = texture2D(zBuffer, pixelToScreen(eastPixelCoord)).r;",
 	    "float northValue = texture2D(zBuffer, pixelToScreen(northPixelCoord)).r;",
 
-	    "float eastDiff = pow(pixelValue - eastValue, 2.0);",
-	    "float northDiff = pow(pixelValue - northValue, 2.0);",
+	    "float eastDiff =  1000000.0 * (pixelValue - eastValue);",
+	    "float northDiff = 1000000.0 * (pixelValue - northValue);",
 
-            "float totalDiff = eastDiff + northDiff;",
-            "float color = 1.0 - totalDiff;",
+            "float totalDiff = pow(eastDiff, 2.0) + pow(northDiff, 2.0);",
+            "float color = 1.0 - pow(totalDiff, 1.0);",
             
 
 	    "gl_FragColor = vec4(color, color, color, 1.0);",
