@@ -218,7 +218,11 @@ var container, stats;
 
       celPostProcessScene = new THREE.Scene();
       var celPostProcessMaterial = new THREE.ShaderMaterial( {
-        uniforms: { zBuffer: { type: "t", value: zTexture } },
+        uniforms: {
+	  zBuffer: { type: "t", value: zTexture },
+	  screenWidth:  { type: "f", value: zTexture.width },
+	  screenHeight: { type: "f", value: zTexture.height }
+	},
         vertexShader: [
 	  "varying vec2 screenCoord;",
           "void main() {",
@@ -229,10 +233,36 @@ var container, stats;
         ].join("\n"),
         fragmentShader: [
 	  "uniform sampler2D zBuffer;",
+	  "uniform float screenWidth;",
+	  "uniform float screenHeight;",
 	  "varying vec2 screenCoord;",
 
+	  "vec2 screenToPixel(vec2 screen) {",
+	    "return vec2(screen.x * screenWidth, screen.y * screenHeight);",
+	  "}",
+	  
+	  "vec2 pixelToScreen(vec2 pixel) {",
+	    "return vec2(pixel.x / screenWidth, pixel.y / screenHeight);",
+	  "}",
+	  
 	  "void main() {",
-	    "gl_FragColor = texture2D(zBuffer, screenCoord);",
+	    "vec2 pixelCoord = screenToPixel(screenCoord);",
+	    "float pixelValue = texture2D(zBuffer, screenCoord).r;",
+
+	    "vec2 eastPixelCoord = pixelCoord + vec2(1.0, 0.0);",
+	    "vec2 northPixelCoord = pixelCoord + vec2(0.0, 1.0);",
+
+	    "float eastValue = texture2D(zBuffer, pixelToScreen(eastPixelCoord)).r;",
+	    "float northValue = texture2D(zBuffer, pixelToScreen(northPixelCoord)).r;",
+
+	    "float eastDiff = pow(pixelValue - eastValue, 2.0);",
+	    "float northDiff = pow(pixelValue - northValue, 2.0);",
+
+            "float totalDiff = eastDiff + northDiff;",
+            "float color = 1.0 - totalDiff;",
+            
+
+	    "gl_FragColor = vec4(color, color, color, 1.0);",
 	  "}"
 	].join("\n"),
         depthWrite: false
@@ -256,7 +286,7 @@ var container, stats;
 
       //
 
-      renderer = new THREE.WebGLRenderer( { antialias: true } );
+      renderer = new THREE.WebGLRenderer( { antialias: true, clearColor: 0xFFFFFF } );
       renderer.setSize( window.innerWidth, window.innerHeight );
 
       container.appendChild( renderer.domElement );

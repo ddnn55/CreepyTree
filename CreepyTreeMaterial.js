@@ -27,7 +27,7 @@ CreepyTreeMaterial = function ( parameters ) {
 
       // outputs
       "gl_Position = projectionMatrix * mvPosition;",
-      "screenZ = gl_Position.z;",
+      "screenZ = gl_Position.z / gl_Position.w;",
       "treeDepth = uv2.x;",
 
     "}"
@@ -55,7 +55,8 @@ CreepyTreeMaterial = function ( parameters ) {
       "gl_FragColor = vec4( value, value, value, float(treeDepth < growth) );",
 
       // visualize screenZ
-      "float color = screenZ * 0.002;",
+      //"float color = screenZ * 0.002;",
+      "float color = screenZ * 0.2;",
       "gl_FragColor = vec4( color, color, color, float(treeDepth < growth) );",
 
       // visualize treeDepth
