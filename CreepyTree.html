@@ -118,8 +118,8 @@
       //var value = document.getElementById('dropdown').value;
 
       //var segments = parseInt(document.getElementById('segments').value);
-      closed2 = document.getElementById('closed').checked;
-      debug = document.getElementById('debug').checked;
+      //closed2 = document.getElementById('closed').checked;
+      //debug = document.getElementById('debug').checked;
 
       //var radiusSegments = parseInt(document.getElementById('radiusSegments').value);
 
@@ -179,7 +179,7 @@
       if ( toggle ) {
 
         animation = animation === false;
-        document.getElementById('animation').value = 'Camera Spline Animation View: ' + (animation? 'ON': 'OFF');
+//        document.getElementById('animation').value = 'Camera Spline Animation View: ' + (animation? 'ON': 'OFF');
 
       }
 
@@ -210,9 +210,7 @@
       //info.innerHTML += dropdown;
 
       //info.innerHTML += '<br/>Scale: <select id="scale" onchange="setScale()"><option>1</option><option>2</option><option selected>4</option><option>6</option><option>10</option></select>';
-      info.innerHTML += '<br/>Debug normals: <input id="debug" type="checkbox" onchange="addTube()"  /> Closed:<input id="closed" onchange="addTube()" type="checkbox" checked />';
 
-      info.innerHTML += '<br/><br/><input id="animation" type="button" onclick="animateCamera(true)" value="Camera Spline Animation View: OFF"/><br/> Look Ahead <input id="lookAhead" type="checkbox" onchange="animateCamera()" /> Camera Helper <input id="cameraHelper" type="checkbox" onchange="animateCamera()" />';
 
       container.appendChild(info);
 
