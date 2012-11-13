@@ -95,15 +95,15 @@
 
     extrudePath = new THREE.Curves.TrefoilKnot();
 
-    var dropdown = '<select id="dropdown" onchange="addTube(this.value)">';
+//    var dropdown = '<select id="dropdown" onchange="addTube(this.value)">';
 
     var s;
     for ( s in splines ) {
-      dropdown += '<option value="' + s + '"';
-      dropdown += '>' + s + '</option>';
+  //    dropdown += '<option value="' + s + '"';
+  //    dropdown += '>' + s + '</option>';
     }
 
-    dropdown += '</select>';
+    //dropdown += '</select>';
 
     var closed2 = true;
     var debug = true;
@@ -135,8 +135,15 @@
         tube = new THREE.TreeTubeGeometry(treeCurve, options);
       else
         tube = new THREE.TubeGeometry(extrudePath, segments, 2, radiusSegments, closed2, debug);
-
-      addGeometry(tube, 0xff00ff);
+      
+      treeMaterial = new CreepyTreeMaterial({
+        //color: color,
+        opacity: 1.0,
+        transparent: true,
+	growth: options.growth
+      });
+      
+      addGeometry(tube, treeMaterial);
       setScale();
 
     }
@@ -148,18 +155,14 @@
     }
 
 
-    function addGeometry( geometry, color ) {
+    function addGeometry( geometry, material ) {
 
 
       // 3d shape
-      treeMaterial = new CreepyTreeMaterial({
-        color: color,
-        opacity: 1.0,
-        transparent: true
-      });
+
 
       //tubeMesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [
-      tubeMesh = new THREE.Mesh( geometry, treeMaterial );
+      tubeMesh = new THREE.Mesh( geometry, material );
 
         /*new THREE.MeshBasicMaterial({
           color: 0x000000,
@@ -235,7 +238,7 @@
       cameraHelper = new THREE.CameraHelper(splineCamera);
       scene.add(cameraHelper);
 
-      addTube();
+      //addTube();
 
       // Debug point
 
@@ -415,7 +418,7 @@
         radius: 1,
 	radiusSegments: 64,
 	segments: 100,
-	growth: 0.5,
+	growth: 1.0,
 	scale: 5.0
       };
       

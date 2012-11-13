@@ -12,19 +12,22 @@ CreepyTreeMaterial = function ( parameters ) {
 
   var shaders = THREE.ShaderLib[ 'normal' ];
   this.uniforms = THREE.UniformsUtils.clone( shaders.uniforms );
-  this.uniforms.growth = { type: 'f', value: '0.5' };
+  this.uniforms.growth = { type: 'f', value: parameters.growth };
   this.vertexShader = [
 
     "varying vec3 vNormal;",
     //"attribute vec2 uv2;",
     "varying float treeDepth;",
+    "varying float screenZ;",
 
     "void main() {",
 
       "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
       "vNormal = normalMatrix * normal;",
 
+      // outputs
       "gl_Position = projectionMatrix * mvPosition;",
+      "screenZ = gl_Position.z;",
       "treeDepth = uv2.x;",
 
     "}"
@@ -35,8 +38,10 @@ CreepyTreeMaterial = function ( parameters ) {
 
     "uniform float opacity;",
     "uniform float growth;",
+    
     "varying vec3 vNormal;",
     "varying float treeDepth;",
+    "varying float screenZ;",
 
     "void main() {",
        
@@ -47,10 +52,14 @@ CreepyTreeMaterial = function ( parameters ) {
       "float z = normalize( vNormal ).z;",
       "float x = normalize( vNormal ).x;",
       "float value = float(z > 0.3);",
-      //"gl_FragColor = vec4( value, value, value, opacity );",
+      "gl_FragColor = vec4( value, value, value, float(treeDepth < growth) );",
+
+      // visualize screenZ
+      "float color = screenZ * 0.002;",
+      "gl_FragColor = vec4( color, color, color, float(treeDepth < growth) );",
 
       // visualize treeDepth
-      "gl_FragColor = vec4( treeDepth, treeDepth, treeDepth, float(treeDepth < growth) );",
+      //"gl_FragColor = vec4( treeDepth, treeDepth, treeDepth, float(treeDepth < growth) );",
 
     "}"
 
