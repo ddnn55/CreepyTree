@@ -34,7 +34,7 @@ var container, stats;
     treeCurve.root.addChild(-30.0, 30.0, 30.0);
     treeCurve.root.addChild(30.0, -30.0, 30.0);
 
-    treeCurve = TreeCurve.random(50);
+    treeCurve = TreeCurve.random(1000);
 
     // Keep a dictionary of Curve instances
     var splines = {
@@ -249,8 +249,8 @@ var container, stats;
 	    "vec2 pixelCoord = screenToPixel(screenCoord);",
 	    "float pixelValue = texture2D(zBuffer, screenCoord).r;",
 
-	    "vec2 eastPixelCoord = pixelCoord + vec2(1.0, 0.0);",
-	    "vec2 northPixelCoord = pixelCoord + vec2(0.0, 1.0);",
+	    "vec2 eastPixelCoord = pixelCoord + vec2(2.0, 0.0);",
+	    "vec2 northPixelCoord = pixelCoord + vec2(0.0, 2.0);",
 
 	    "float eastValue = texture2D(zBuffer, pixelToScreen(eastPixelCoord)).r;",
 	    "float northValue = texture2D(zBuffer, pixelToScreen(northPixelCoord)).r;",
@@ -427,9 +427,9 @@ var container, stats;
         tubeMesh.scale.set( scale, scale, scale );
       });
       var meshFolder = gui.addFolder('Mesh');
-      meshFolder.add(options, 'radius', 0.5, 10.0).onChange(update);
-      meshFolder.add(options, 'radiusSegments', 3, 64).onChange(update);
-      meshFolder.add(options, 'segments', 10, 500).onChange(update);
+      meshFolder.add(options, 'radius', 0.5, 10.0).onFinishChange(update);
+      meshFolder.add(options, 'radiusSegments', 3, 64).onFinishChange(update);
+      meshFolder.add(options, 'segments', 10, 500).onFinishChange(update);
       meshFolder.add(options, 'growth', 0.0, 1.0).onChange(function(growth) {
         tubeMesh.material.uniforms['growth'] = { type: "f", value: growth };
       });
