@@ -20410,6 +20410,14 @@ THREE.WebGLRenderer = function ( parameters ) {
 			}
 
 			// load common uniforms
+		
+			material.uniformsList = [];
+
+			for ( u in material.uniforms ) {
+
+				material.uniformsList.push( [ material.uniforms[ u ], u ] );
+
+			}
 
 			loadUniformsGeneric( program, material.uniformsList );
 

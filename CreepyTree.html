@@ -108,7 +108,7 @@
     var closed2 = true;
     var debug = true;
     var parent;
-    var tube, tubeMesh;
+    var tube, tubeMesh, treeMaterial;
     var animation = false, lookAhead = false;
     var scale;
     var showCameraHelper = false;
@@ -152,22 +152,23 @@
 
 
       // 3d shape
+      treeMaterial = new CreepyTreeMaterial({
+        color: color,
+        opacity: 1.0,
+        transparent: true
+      });
 
-      tubeMesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [
-        new CreepyTreeMaterial({
-          color: color,
-          opacity: geometry.debug ? 0.2 : 0.8,
-          transparent: true
-        }),
+      //tubeMesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [
+      tubeMesh = new THREE.Mesh( geometry, treeMaterial );
+
         /*new THREE.MeshBasicMaterial({
           color: 0x000000,
           opacity: 0.5,
           wireframe: true
-          //wireframe: false
         })*/
-      ]);
+      //]);
 
-      if ( geometry.debug ) tubeMesh.add( geometry.debug );
+      //if ( geometry.debug ) tubeMesh.add( geometry.debug );
 
       parent.add( tubeMesh );
 
@@ -416,7 +417,7 @@
         radius: 1,
 	radiusSegments: 64,
 	segments: 100,
-	growth: 1.0,
+	growth: 0.5,
 	scale: 5.0
       };
       
@@ -435,7 +436,9 @@
       meshFolder.add(options, 'radius', 0.5, 10.0).onChange(update);
       meshFolder.add(options, 'radiusSegments', 3, 64).onChange(update);
       meshFolder.add(options, 'segments', 10, 500).onChange(update);
-      meshFolder.add(options, 'growth', 0.0, 1.0).onChange();
+      meshFolder.add(options, 'growth', 0.0, 1.0).onChange(function(growth) {
+        tubeMesh.material.uniforms['growth'] = { type: "f", value: growth };
+      });
       
       viewFolder.open();
       meshFolder.open();

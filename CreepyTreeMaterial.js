@@ -12,6 +12,7 @@ CreepyTreeMaterial = function ( parameters ) {
 
   var shaders = THREE.ShaderLib[ 'normal' ];
   this.uniforms = THREE.UniformsUtils.clone( shaders.uniforms );
+  this.uniforms.growth = { type: 'f', value: '0.5' };
   this.vertexShader = [
 
     "varying vec3 vNormal;",
@@ -33,6 +34,7 @@ CreepyTreeMaterial = function ( parameters ) {
   this.fragmentShader = [
 
     "uniform float opacity;",
+    "uniform float growth;",
     "varying vec3 vNormal;",
     "varying float treeDepth;",
 
@@ -48,7 +50,7 @@ CreepyTreeMaterial = function ( parameters ) {
       //"gl_FragColor = vec4( value, value, value, opacity );",
 
       // visualize treeDepth
-      "gl_FragColor = vec4( treeDepth, treeDepth, treeDepth, opacity );",
+      "gl_FragColor = vec4( treeDepth, treeDepth, treeDepth, float(treeDepth < growth) );",
 
     "}"
 
