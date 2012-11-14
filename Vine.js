@@ -35,7 +35,7 @@ treeCurve.root.children[0].addChild(-30.0, 30.0, 0.0);
 treeCurve.root.addChild(-30.0, 30.0, 30.0);
 treeCurve.root.addChild(30.0, -30.0, 30.0);
 
-treeCurve = TreeCurve.random(1000);
+treeCurve = TreeCurve.random(100);
 
 // Keep a dictionary of Curve instances
 var splines = {
@@ -200,7 +200,9 @@ function init() {
     {
       minFilter: THREE.LinearFilter,
       magFilter: THREE.NearestFilter,
-      format: THREE.LuminanceFormat,
+      //format: THREE.LuminanceFormat,
+      //format: THREE.AlphaFormat, // OS X bugs for these two!
+      format: THREE.RGBFormat,
       type: THREE.FloatType
     }
   );
@@ -389,6 +391,7 @@ function render() {
 
   parent.rotation.y += ( targetRotation - parent.rotation.y ) * 0.05;
 
+  //renderer.render( scene, camera );
   renderer.render( scene, camera, zTexture, true );
 
   renderer.render( celPostProcessScene, celPostProcessCamera );
