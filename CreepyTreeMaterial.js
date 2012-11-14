@@ -16,19 +16,21 @@ CreepyTreeMaterial = function ( parameters ) {
   this.vertexShader = [
 
     "varying vec3 vNormal;",
-    //"attribute vec2 uv2;",
     "varying float treeDepth;",
     "varying float screenZ;",
+    "uniform float radius;",
+    "uniform float growth;",
 
     "void main() {",
+      "treeDepth = uv2.x;",
 
-      "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
-      "vNormal = normalMatrix * normal;",
+      //"vec3 extrudedPosition = position + 10.0 * growth * vec3(1.0, 0.0, 0.0);",
+      "vec3 extrudedPosition = position + 10.0 * growth * normal;",
+      "vec4 mvPosition = modelViewMatrix * vec4( extrudedPosition, 1.0 );",
 
       // outputs
       "gl_Position = projectionMatrix * mvPosition;",
       "screenZ = gl_Position.z / gl_Position.w;",
-      "treeDepth = uv2.x;",
 
     "}"
 

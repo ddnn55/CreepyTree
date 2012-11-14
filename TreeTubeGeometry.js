@@ -24,7 +24,7 @@ THREE.TreeTubeGeometry = function( treeCurve, options ) {
   options.maxDepth = treeCurve.maxDepth();
   options.segmentDivisionSize = treeCurve.totalLength() / this.segments;
   options.radiusSegments = this.radiusSegments;
-  options.existingGeometry = { vertices: [], faces: [], treeDepths: [] };
+  options.existingGeometry = { vertices: [], normals: [], faces: [], treeDepths: [] };
 
   var geometry = makeExtrudedGeometryForTree(treeCurve.root, options, 0.0);
   /*{
@@ -33,6 +33,7 @@ THREE.TreeTubeGeometry = function( treeCurve, options ) {
   });*/
 
   this.vertices = geometry.vertices;
+  this.normals = geometry.normals;
   this.faces = geometry.faces;
   this.faceVertexUvs[0] = geometry.treeDepths;
   this.faceVertexUvs[1] = geometry.treeDepths;
@@ -40,14 +41,14 @@ THREE.TreeTubeGeometry = function( treeCurve, options ) {
   console.log(geometry.treeDepths);
 
   this.computeCentroids();
-  this.computeFaceNormals();
-  this.computeVertexNormals();
+  //this.computeFaceNormals();
+  //this.computeVertexNormals();
 
 };
 
 function makeExtrudedGeometryForTree(tree, options, startingDepth)
 {
-  var geometry = options.existingGeometry || { vertices: [], faces: [], treeDepths: [] };
+  var geometry = options.existingGeometry || { vertices: [], normals: [], faces: [], treeDepths: [] };
 
   for(var c = 0; c < tree.children.length; c++)
   {
@@ -63,6 +64,7 @@ function makeExtrudedGeometryForTree(tree, options, startingDepth)
     }
     
     geometry.vertices = geometry.vertices.concat(segmentGeometry.vertices);
+    geometry.normals = geometry.normals.concat(segmentGeometry.normals);
     geometry.faces = geometry.faces.concat(segmentGeometry.faces);
     geometry.treeDepths = geometry.treeDepths.concat(segmentGeometry.treeDepths);
     
@@ -78,7 +80,7 @@ function makeExtrudedGeometryForTree(tree, options, startingDepth)
 function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiusSegments, radius, startingDepth, maxDepth)
 {
 
-  var geometry = { vertices: [], faces: [], treeDepths: [] };
+  var geometry = { vertices: [], normals: [], faces: [], treeDepths: [] };
   
   var segmentLength = nodeA.distanceTo(nodeB);
  
@@ -92,7 +94,9 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
   {
     var fraction = d / numberOfDivisions;
     var curvePos = aToB.clone().multiplyScalar(fraction).addSelf(nodeA);
-    geometry.vertices = geometry.vertices.concat( makeCircleVertices(curvePos, curveNormal, curveBinormal, radiusSegments, radius) );
+    var circleGeometry = makeCircleGeometry(curvePos, curveNormal, curveBinormal, radiusSegments, radius)
+    geometry.vertices = geometry.vertices.concat( circleGeometry.vertices );
+    var normals  = geometry.normals.concat(  circleGeometry.normals );
 
     if(d > 0)
     {
@@ -101,11 +105,13 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
       {
         var radiusIndexA = f;
 	var radiusIndexB = (f+1) % radiusSegments;
+	var v1 = d       * radiusSegments + radiusIndexA;
+	var v2 = d       * radiusSegments + radiusIndexB;
+	var v3 = (d - 1) * radiusSegments + radiusIndexB;
+	var v4 = (d - 1) * radiusSegments + radiusIndexA;
         geometry.faces.push(new THREE.Face4(
-	  d       * radiusSegments + radiusIndexA,
-	  d       * radiusSegments + radiusIndexB,
-	  (d - 1) * radiusSegments + radiusIndexB,
-	  (d - 1) * radiusSegments + radiusIndexA
+	  v1, v2, v3, v4,
+	  [normals[v1], normals[v2], normals[v3], normals[v4]]
 	));
 
         var previousDepth = startingDepth + previousFraction * segmentLength;
@@ -124,18 +130,21 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
   return geometry;
 }
 
-function makeCircleVertices(center, basisX, basisY, radiusSegments, radius)
+function makeCircleGeometry(center, basisX, basisY, radiusSegments, radius)
 {
   var vertices = [];
+  var normals = [];
   for(var v = 0; v < radiusSegments; v++)
   {
     var angle = Math.PI * 2 * v / radiusSegments;
-    var xVec = basisX.clone().multiplyScalar( radius * Math.cos(angle) );
-    var yVec = basisY.clone().multiplyScalar( radius * Math.sin(angle) );
+    var xVec = basisX.clone().multiplyScalar( Math.cos(angle) );
+    var yVec = basisY.clone().multiplyScalar( Math.sin(angle) );
     var fromCenter = (new THREE.Vector3()).add(xVec, yVec);
+    //vertices.push( center );
     vertices.push( center.clone().addSelf(fromCenter) );
+    normals.push( fromCenter );
   }
-  return vertices;
+  return {vertices:vertices, normals:normals};
 }
 
 function normalToVec3(vec) {

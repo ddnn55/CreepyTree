@@ -425,7 +425,10 @@ function addDatGui()
     tubeMesh.scale.set( scale, scale, scale );
   });
   var meshFolder = gui.addFolder('Mesh');
-  meshFolder.add(vineOptions, 'radius', 0.5, 10.0).onFinishChange(update);
+  meshFolder.add(vineOptions, 'radius', 0.5, 10.0).onChange(function(radius) {
+    tubeMesh.material.uniforms['radius'] = { type: "f", value: radius };
+    console.log('updated radius uniform');
+  });
   meshFolder.add(vineOptions, 'radiusSegments', 3, 64).onFinishChange(update);
   meshFolder.add(vineOptions, 'segments', 10, 500).onFinishChange(update);
   meshFolder.add(vineOptions, 'growth', 0.0, 1.0).onChange(function(growth) {
