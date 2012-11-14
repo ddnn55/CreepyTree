@@ -98,7 +98,8 @@ function addTube(options) {
     //color: color,
     opacity: 1.0,
     transparent: true,
-    growth: options.growth
+    growth: options.growth,
+    radius: options.radius
   });
   
   addGeometry(tube, treeMaterial);
@@ -430,7 +431,6 @@ function addDatGui()
   var meshFolder = gui.addFolder('Mesh');
   meshFolder.add(vineOptions, 'radius', 0.5, 10.0).onChange(function(radius) {
     tubeMesh.material.uniforms['radius'] = { type: "f", value: radius };
-    console.log('updated radius uniform');
   });
   meshFolder.add(vineOptions, 'radiusSegments', 3, 64).onFinishChange(update);
   meshFolder.add(vineOptions, 'segments', 10, 500).onFinishChange(update);

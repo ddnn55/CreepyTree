@@ -13,6 +13,7 @@ CreepyTreeMaterial = function ( parameters ) {
   var shaders = THREE.ShaderLib[ 'normal' ];
   this.uniforms = THREE.UniformsUtils.clone( shaders.uniforms );
   this.uniforms.growth = { type: 'f', value: parameters.growth };
+  this.uniforms.radius = { type: 'f', value: parameters.radius };
   this.vertexShader = [
 
     "varying vec3 vNormal;",
@@ -24,8 +25,8 @@ CreepyTreeMaterial = function ( parameters ) {
     "void main() {",
       "treeDepth = uv2.x;",
 
-      //"vec3 extrudedPosition = position + 10.0 * growth * vec3(1.0, 0.0, 0.0);",
-      "vec3 extrudedPosition = position + 10.0 * growth * normal;",
+      "vec3 extrudedPosition = position + 10.0 * radius * vec3(1.0, 0.0, 0.0);",
+      //"vec3 extrudedPosition = position + 10.0 * growth * normal;",
       "vec4 mvPosition = modelViewMatrix * vec4( extrudedPosition, 1.0 );",
 
       // outputs
