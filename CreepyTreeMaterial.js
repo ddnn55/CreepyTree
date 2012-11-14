@@ -44,15 +44,9 @@ CreepyTreeMaterial = function ( parameters ) {
     "varying float screenZ;",
 
     "void main() {",
-       
-      // normal viz
-      //"gl_FragColor = vec4( 0.5 * normalize( vNormal ) + 0.5, opacity );",
-
-      // screen ortho cel shading
-      "float z = normalize( vNormal ).z;",
-      "float x = normalize( vNormal ).x;",
-      "float value = float(z > 0.3);",
-      "gl_FragColor = vec4( value, value, value, float(treeDepth < growth) );",
+      
+      // discard if haven't grown here yet
+      "if(treeDepth > growth) discard;",
 
       // visualize screenZ
       //"float color = screenZ * 0.002;",
