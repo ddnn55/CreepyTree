@@ -43,20 +43,12 @@ TreeCurveNode.prototype.addRandomTree = function(segments, depth)
 {
   depth = depth || 0;
 
-
   var branches = Math.ceil(Math.min(segments, (Math.random() * 4)));
   if(branches == 0)
     return;
 
   segments -= branches;
   var segmentBudgetPerChild = Math.floor(segments / branches);
-  
-  
-  if(depth > 10)
-  {
-    console.log('budget', segmentBudgetPerChild);
-    //return; // hack. why does this happen
-  }
   
   for(var b = 0; b < branches; b++)
   {
