@@ -107,11 +107,16 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
 	var v2 = d       * radiusSegments + radiusIndexB;
 	var v3 = (d - 1) * radiusSegments + radiusIndexB;
 	var v4 = (d - 1) * radiusSegments + radiusIndexA;
-        geometry.faces.push(new THREE.Face4(
-	  v1, v2, v3, v4,
-	  //[geometry.normals[v1], geometry.normals[v2], geometry.normals[v3], geometry.normals[v4]]
-	  geometry.normals[v1].clone().addSelf( geometry.normals[v2] ).addSelf( geometry.normals[v3] ).addSelf( geometry.normals[v4] ).multiplyScalar( 0.25 )
-	));
+        
+	var face = new THREE.Face4(
+	  v1, v2, v3, v4
+	  //, [geometry.normals[v1], geometry.normals[v2], geometry.normals[v3], geometry.normals[v4]]
+	  //, geometry.normals[v1].clone().addSelf( geometry.normals[v2] ).addSelf( geometry.normals[v3] ).addSelf( geometry.normals[v4] ).multiplyScalar( 0.25 )
+	  //, geometry.normals[v1]
+	);
+	face.vertexNormals = [geometry.normals[v1], geometry.normals[v2], geometry.normals[v3], geometry.normals[v4]];
+	face.normal = geometry.normals[v1];
+	geometry.faces.push(face);
 
         var previousDepth = startingDepth + previousFraction * segmentLength;
 	var currentDepth =  startingDepth + fraction         * segmentLength;
@@ -139,8 +144,8 @@ function makeCircleGeometry(center, basisX, basisY, radiusSegments, radius)
     var xVec = basisX.clone().multiplyScalar( Math.cos(angle) );
     var yVec = basisY.clone().multiplyScalar( Math.sin(angle) );
     var fromCenter = (new THREE.Vector3()).add(xVec, yVec);
-    //vertices.push( center );
-    vertices.push( center.clone().addSelf(fromCenter) );
+    vertices.push( center );
+    //vertices.push( center.clone().addSelf(fromCenter) );
     normals.push( fromCenter );
   }
   return {vertices:vertices, normals:normals};

@@ -1,5 +1,7 @@
 CreepyTreeMaterial = function ( parameters ) {
 
+  parameters.shading = THREE.SmoothShading;
+
   THREE.ShaderMaterial.call( this, parameters );
 
   this.shading = THREE.FlatShading;
@@ -25,7 +27,7 @@ CreepyTreeMaterial = function ( parameters ) {
     "void main() {",
       "treeDepth = uv2.x;",
 
-      "vec3 extrudedPosition = position + 10.0 * radius * vec3(1.0, 0.0, 0.0);",
+      "vec3 extrudedPosition = position + radius * normal;",
       //"vec3 extrudedPosition = position + 10.0 * growth * normal;",
       "vec4 mvPosition = modelViewMatrix * vec4( extrudedPosition, 1.0 );",
 

@@ -408,7 +408,7 @@ function addDatGui()
   viewFolder.add(vineOptions, 'celShade', true);
 
   var meshFolder = gui.addFolder('Mesh');
-  meshFolder.add(vineOptions, 'radius', 0.5, 10.0).onChange(function(radius) {
+  meshFolder.add(vineOptions, 'radius', 0.0, 10.0).onChange(function(radius) {
     tubeMesh.material.uniforms['radius'] = { type: "f", value: radius };
   });
   meshFolder.add(vineOptions, 'radiusSegments', 3, 64).onFinishChange(update);
