@@ -84,7 +84,7 @@ function addTube(options) {
     transparent: true,
     growth: options.growth,
     radius: options.radius,
-    growPeriod: 0.02
+    growPeriod: 0.05
   });
   
   console.log(treeCurve.maxDepth());
@@ -196,6 +196,8 @@ function init() {
       "uniform float screenWidth;",
       "uniform float screenHeight;",
       "varying vec2 screenCoord;",
+      
+      "#define outlineRadius 2",
 
       "vec2 screenToPixel(vec2 screen) {",
         "return vec2(screen.x * screenWidth, screen.y * screenHeight);",
@@ -205,21 +207,26 @@ function init() {
         "return vec2(pixel.x / screenWidth, pixel.y / screenHeight);",
       "}",
       
+      "float totalDiff = 0.0;",
+
       "void main() {",
         "vec2 pixelCoord = screenToPixel(screenCoord);",
         "float pixelValue = texture2D(zBuffer, screenCoord).r;",
 
-        "vec2 eastPixelCoord = pixelCoord + vec2(2.0, 0.0);",
-        "vec2 northPixelCoord = pixelCoord + vec2(0.0, 2.0);",
+        "for(int n = 1; n <= outlineRadius; n++) {",
+          "vec2 eastPixelCoord = pixelCoord + vec2(float(n), 0.0);",
+          "vec2 northPixelCoord = pixelCoord + vec2(0.0, float(n));",
 
-        "float eastValue = texture2D(zBuffer, pixelToScreen(eastPixelCoord)).r;",
-        "float northValue = texture2D(zBuffer, pixelToScreen(northPixelCoord)).r;",
+          "float eastValue = texture2D(zBuffer, pixelToScreen(eastPixelCoord)).r;",
+          "float northValue = texture2D(zBuffer, pixelToScreen(northPixelCoord)).r;",
 
-        "float eastDiff =  1000000.0 * (pixelValue - eastValue);",
-        "float northDiff = 1000000.0 * (pixelValue - northValue);",
+          "float eastDiff =  1000000.0 * (pixelValue - eastValue);",
+          "float northDiff = 1000000.0 * (pixelValue - northValue);",
 
-        "float totalDiff = pow(eastDiff, 2.0) + pow(northDiff, 2.0);",
-        "float color = 1.0 - pow(totalDiff, 1.0);",
+          "totalDiff += pow(eastDiff, 2.0) + pow(northDiff, 2.0);",
+        "}",
+
+	"float color = 1.0 - pow(totalDiff, 1.0);",
         
 
         "gl_FragColor = vec4(color, color, color, 1.0);",
@@ -350,14 +357,16 @@ function animate() {
 
   requestAnimationFrame(animate);
 
-  render();
+  render((new Date()).getTime() / 1000.0);
   stats.update();
 
 }
 
-function render() {
+function render(seconds) {
 
   parent.rotation.y += ( targetRotation - parent.rotation.y ) * 0.05;
+
+  updateGrowth( 0.5 - 0.5 * Math.sin( seconds / 5.0 ) );
 
   if(vineOptions.debugScene)
   {
@@ -370,7 +379,9 @@ function render() {
   }
 }
 
-
+function updateGrowth(growth) {
+  tubeMesh.material.uniforms['growth'] = { type: "f", value: growth };
+}
 
 function addDatGui()
 {
@@ -416,9 +427,7 @@ function addDatGui()
   });
   meshFolder.add(vineOptions, 'radiusSegments', 3, 64).onFinishChange(update);
   meshFolder.add(vineOptions, 'segments', 100, 5000).onFinishChange(update);
-  meshFolder.add(vineOptions, 'growth', 0.0, 1.0).onChange(function(growth) {
-    tubeMesh.material.uniforms['growth'] = { type: "f", value: growth };
-  });
+  meshFolder.add(vineOptions, 'growth', 0.0, 1.0).onChange(updateGrowth);
   
   viewFolder.open();
   meshFolder.open();
