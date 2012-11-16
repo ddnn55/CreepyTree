@@ -83,9 +83,12 @@ function addTube(options) {
     opacity: 1.0,
     transparent: true,
     growth: options.growth,
-    radius: options.radius
+    radius: options.radius,
+    growPeriod: 0.02
   });
   
+  console.log(treeCurve.maxDepth());
+ 
   normalMaterial = new THREE.MeshNormalMaterial({
     opacity: 1.0
   });
@@ -375,7 +378,7 @@ function addDatGui()
     var _this = this;
     this.radius = 1;
     this.radiusSegments = 64;
-    this.segments = 100;
+    this.segments = 1000;
     this.growth = 1.0;
     this.scale = 5.0;
     this.debugNormals = function() {
@@ -412,7 +415,7 @@ function addDatGui()
     tubeMesh.material.uniforms['radius'] = { type: "f", value: radius };
   });
   meshFolder.add(vineOptions, 'radiusSegments', 3, 64).onFinishChange(update);
-  meshFolder.add(vineOptions, 'segments', 10, 500).onFinishChange(update);
+  meshFolder.add(vineOptions, 'segments', 100, 5000).onFinishChange(update);
   meshFolder.add(vineOptions, 'growth', 0.0, 1.0).onChange(function(growth) {
     tubeMesh.material.uniforms['growth'] = { type: "f", value: growth };
   });

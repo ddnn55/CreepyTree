@@ -16,19 +16,28 @@ CreepyTreeMaterial = function ( parameters ) {
   this.uniforms = THREE.UniformsUtils.clone( shaders.uniforms );
   this.uniforms.growth = { type: 'f', value: parameters.growth };
   this.uniforms.radius = { type: 'f', value: parameters.radius };
+  this.uniforms.growPeriod = { type: 'f', value: parameters.growPeriod };
   this.vertexShader = [
 
+    "#define PI 3.14159265359",
+
     "varying vec3 vNormal;",
-    "varying float treeDepth;",
+    "varying float vDepth;",
     "varying float screenZ;",
+    "uniform float growPeriod;",
     "uniform float radius;",
     "uniform float growth;",
 
     "void main() {",
-      "treeDepth = uv2.x;",
+      "float growDone = growth - growPeriod;",
 
-      "float vAge = max(0.0, (growth - treeDepth));",
-      "float thickness = min(radius * vAge, radius);",
+      "vDepth = uv2.x;",
+//      "float vAge = max(0.0, (growth - vDepth));",
+      "float growthProgress = float(vDepth < growDone) * 1.0",
+                           ,"+ float(vDepth >= growDone && vDepth < growth) * (growth - vDepth) / growPeriod;",
+      "float thicknessFactor = float(vDepth < growDone) * 1.0"
+                           ,"+ float(vDepth >= growDone) * (0.5 - cos( PI * growthProgress ) / 2.0);",
+      "float thickness = radius * thicknessFactor;",
       "vec3 extrudedPosition = position + thickness * normal;",
       //"vec3 extrudedPosition = position + 10.0 * growth * normal;",
       "vec4 mvPosition = modelViewMatrix * vec4( extrudedPosition, 1.0 );",
@@ -47,21 +56,21 @@ CreepyTreeMaterial = function ( parameters ) {
     "uniform float growth;",
     
     "varying vec3 vNormal;",
-    "varying float treeDepth;",
+    "varying float vDepth;",
     "varying float screenZ;",
 
     "void main() {",
       
       // discard if haven't grown here yet
-      "if(treeDepth > growth) discard;",
+      "if(vDepth > growth) discard;",
 
       // visualize screenZ
       //"float color = screenZ * 0.002;",
       "float color = screenZ * 0.2;",
-      "gl_FragColor = vec4( color, color, color, float(treeDepth < growth) );",
+      "gl_FragColor = vec4( color, color, color, float(vDepth < growth) );",
 
-      // visualize treeDepth
-      //"gl_FragColor = vec4( treeDepth, treeDepth, treeDepth, float(treeDepth < growth) );",
+      // visualize vDepth
+      //"gl_FragColor = vec4( vDepth, vDepth, vDepth, float(vDepth < growth) );",
 
     "}"
 
