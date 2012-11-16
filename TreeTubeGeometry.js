@@ -27,6 +27,7 @@ THREE.TreeTubeGeometry = function( treeCurve, options ) {
   options.existingGeometry = { vertices: [], normals: [], faces: [], treeDepths: [] };
 
   var geometry = makeExtrudedGeometryForTree(treeCurve.root, options, 0.0);
+
   /*{
     segmentDivisionSize: treeCurve.totalLength() / this.segments,
     radiusSegments: this.radiusSegments
@@ -37,8 +38,6 @@ THREE.TreeTubeGeometry = function( treeCurve, options ) {
   this.faces = geometry.faces;
   this.faceVertexUvs[0] = geometry.treeDepths;
   this.faceVertexUvs[1] = geometry.treeDepths;
-
-  console.log(geometry.treeDepths);
 
   this.computeCentroids();
   //this.computeFaceNormals();
@@ -72,7 +71,6 @@ function makeExtrudedGeometryForTree(tree, options, startingDepth)
 
     makeExtrudedGeometryForTree(child, options, startingDepth + tree.distanceTo(child));
   }
-
   
   return geometry;
 }
@@ -96,7 +94,7 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
     var curvePos = aToB.clone().multiplyScalar(fraction).addSelf(nodeA);
     var circleGeometry = makeCircleGeometry(curvePos, curveNormal, curveBinormal, radiusSegments, radius)
     geometry.vertices = geometry.vertices.concat( circleGeometry.vertices );
-    var normals  = geometry.normals.concat(  circleGeometry.normals );
+    geometry.normals  = geometry.normals.concat(  circleGeometry.normals );
 
     if(d > 0)
     {
@@ -111,7 +109,8 @@ function makeExtrudedGeometryForSegment(nodeA, nodeB, segmentDivisionSize, radiu
 	var v4 = (d - 1) * radiusSegments + radiusIndexA;
         geometry.faces.push(new THREE.Face4(
 	  v1, v2, v3, v4,
-	  [normals[v1], normals[v2], normals[v3], normals[v4]]
+	  //[geometry.normals[v1], geometry.normals[v2], geometry.normals[v3], geometry.normals[v4]]
+	  geometry.normals[v1].clone().addSelf( geometry.normals[v2] ).addSelf( geometry.normals[v3] ).addSelf( geometry.normals[v4] ).multiplyScalar( 0.25 )
 	));
 
         var previousDepth = startingDepth + previousFraction * segmentLength;

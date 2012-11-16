@@ -1,4 +1,4 @@
-var container, stats;
+var container, stats, gui;
 
 var camera, scene, celPostProcessScene, renderer, splineCamera, cameraHelper, cameraEye;
 var vineOptions;
@@ -72,68 +72,32 @@ var scale;
 var showCameraHelper = false;
 
 function addTube(options) {
-
-  //var value = document.getElementById('dropdown').value;
-
-  //var segments = parseInt(document.getElementById('segments').value);
-  //closed2 = document.getElementById('closed').checked;
-  //debug = document.getElementById('debug').checked;
-
-  //var radiusSegments = parseInt(document.getElementById('radiusSegments').value);
-
-  //console.log('adding tube', value, closed2, debug, radiusSegments);
   if (tubeMesh)
   {
     parent.remove(tubeMesh);
   }
 
-  extrudePath = treeCurve;
-
-  if(extrudePath instanceof TreeCurve)
-    tube = new THREE.TreeTubeGeometry(treeCurve, options);
-  else
-    tube = new THREE.TubeGeometry(extrudePath, segments, 2, radiusSegments, closed2, debug);
+  tube = new THREE.TreeTubeGeometry(treeCurve, options);
   
   treeMaterial = new CreepyTreeMaterial({
-    //color: color,
     opacity: 1.0,
     transparent: true,
     growth: options.growth,
     radius: options.radius
   });
   
+  normalMaterial = new THREE.MeshNormalMaterial({
+    opacity: 1.0
+  });
+
   addGeometry(tube, treeMaterial);
-  setScale();
-
 }
-
-function setScale() {
-
-  //scale = parseInt( document.getElementById('scale').value );
-
-}
-
 
 function addGeometry( geometry, material ) {
-
-
-  // 3d shape
-
-
-  //tubeMesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [
   tubeMesh = new THREE.Mesh( geometry, material );
-
-    /*new THREE.MeshBasicMaterial({
-      color: 0x000000,
-      opacity: 0.5,
-      wireframe: true
-    })*/
-  //]);
-
-  //if ( geometry.debug ) tubeMesh.add( geometry.debug );
-
   parent.add( tubeMesh );
 
+  console.log(tubeMesh);
 }
 
 function animateCamera( toggle ) {
@@ -392,11 +356,15 @@ function render() {
 
   parent.rotation.y += ( targetRotation - parent.rotation.y ) * 0.05;
 
-  //renderer.render( scene, camera );
-  renderer.render( scene, camera, zTexture, true );
-
-  renderer.render( celPostProcessScene, celPostProcessCamera );
-
+  if(vineOptions.debugScene)
+  {
+    renderer.render( scene, camera );
+  }
+  else 
+  {
+    renderer.render( scene, camera, zTexture, true );
+    renderer.render( celPostProcessScene, celPostProcessCamera );
+  }
 }
 
 
@@ -410,6 +378,14 @@ function addDatGui()
     this.segments = 100;
     this.growth = 1.0;
     this.scale = 5.0;
+    this.debugNormals = function() {
+      _this.debugScene = true;
+      tubeMesh.material = normalMaterial;
+    };
+    this.celShade = function() {
+      _this.debugScene = false;
+      tubeMesh.material = treeMaterial;
+    };
     this.grow = function() {
       _this.growth = 0.0;
       _this.animateGrowth = true;
@@ -423,11 +399,14 @@ function addDatGui()
   }
   
   vineOptions = new VineOptions();
-  var gui = new dat.GUI();
+  gui = new dat.GUI();
   var viewFolder = gui.addFolder('View');
   viewFolder.add(vineOptions, 'scale', 1.0, 10.0).onChange(function(scale) {
     tubeMesh.scale.set( scale, scale, scale );
   });
+  viewFolder.add(vineOptions, 'debugNormals', false);
+  viewFolder.add(vineOptions, 'celShade', true);
+
   var meshFolder = gui.addFolder('Mesh');
   meshFolder.add(vineOptions, 'radius', 0.5, 10.0).onChange(function(radius) {
     tubeMesh.material.uniforms['radius'] = { type: "f", value: radius };
@@ -440,10 +419,7 @@ function addDatGui()
   
   viewFolder.open();
   meshFolder.open();
-  //gui.add(nil, 'displayOutline');
-  //gui.add(nil, 'explode');
 
-  addTube(vineOptions);
   update();
 }
 
