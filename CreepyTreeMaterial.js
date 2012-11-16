@@ -27,7 +27,9 @@ CreepyTreeMaterial = function ( parameters ) {
     "void main() {",
       "treeDepth = uv2.x;",
 
-      "vec3 extrudedPosition = position + radius * normal;",
+      "float vAge = max(0.0, (growth - treeDepth));",
+      "float thickness = min(radius * vAge, radius);",
+      "vec3 extrudedPosition = position + thickness * normal;",
       //"vec3 extrudedPosition = position + 10.0 * growth * normal;",
       "vec4 mvPosition = modelViewMatrix * vec4( extrudedPosition, 1.0 );",
 

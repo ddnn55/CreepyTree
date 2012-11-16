@@ -35,7 +35,7 @@ treeCurve.root.children[0].addChild(-30.0, 30.0, 0.0);
 treeCurve.root.addChild(-30.0, 30.0, 30.0);
 treeCurve.root.addChild(30.0, -30.0, 30.0);
 
-treeCurve = TreeCurve.random(100);
+treeCurve = TreeCurve.random(500);
 
 // Keep a dictionary of Curve instances
 var splines = {
