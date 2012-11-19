@@ -26,7 +26,9 @@ THREE.TreeTubeGeometry = function( treeCurve, options ) {
   options.radiusSegments = this.radiusSegments;
   options.existingGeometry = { vertices: [], normals: [], faces: [], treeDepths: [] };
 
+  var rootCapGeometry = makeCornerGeometryAt(treeCurve.root, options, 0.0);
   var geometry = makeExtrudedGeometryForTree(treeCurve.root, options, 0.0);
+  appendGeometry( geometry, rootCapGeometry );
 
   /*{
     segmentDivisionSize: treeCurve.totalLength() / this.segments,
@@ -45,6 +47,23 @@ THREE.TreeTubeGeometry = function( treeCurve, options ) {
 
 };
 
+function appendGeometry(a, b)
+{
+  for(var f = 0; f < b.faces.length; f++)
+  {
+    b.faces[f].a += a.vertices.length;
+    b.faces[f].b += a.vertices.length;
+    b.faces[f].c += a.vertices.length;
+    if(b.faces[f] instanceof THREE.Face4)
+      b.faces[f].d += a.vertices.length;
+  }
+
+  a.vertices =   a.vertices.concat(b.vertices);
+  a.normals =    a.normals.concat(b.normals);
+  a.faces =      a.faces.concat(b.faces);
+  a.treeDepths = a.treeDepths.concat(b.treeDepths);
+}
+
 function makeExtrudedGeometryForTree(tree, options, startingDepth)
 {
   var geometry = options.existingGeometry || { vertices: [], normals: [], faces: [], treeDepths: [] };
@@ -52,26 +71,47 @@ function makeExtrudedGeometryForTree(tree, options, startingDepth)
   for(var c = 0; c < tree.children.length; c++)
   {
     var child = tree.children[c];
+    var childDepth = startingDepth + tree.distanceTo(child);
+
+    // tube from me to child
     var segmentGeometry = makeExtrudedGeometryForSegment(tree, child, options.segmentDivisionSize, options.radiusSegments, options.radius, startingDepth, options.maxDepth);
-    for(var f = 0; f < segmentGeometry.faces.length; f++)
-    {
-      segmentGeometry.faces[f].a += geometry.vertices.length;
-      segmentGeometry.faces[f].b += geometry.vertices.length;
-      segmentGeometry.faces[f].c += geometry.vertices.length;
-      if(segmentGeometry.faces[f] instanceof THREE.Face4)
-        segmentGeometry.faces[f].d += geometry.vertices.length;
-    }
+    appendGeometry(geometry, segmentGeometry);
     
-    geometry.vertices = geometry.vertices.concat(segmentGeometry.vertices);
-    geometry.normals = geometry.normals.concat(segmentGeometry.normals);
-    geometry.faces = geometry.faces.concat(segmentGeometry.faces);
-    geometry.treeDepths = geometry.treeDepths.concat(segmentGeometry.treeDepths);
+    // sphere at child
+    var segmentCapGeometry = makeCornerGeometryAt(child, options, childDepth / options.maxDepth);
+    appendGeometry(geometry, segmentCapGeometry);
     
     options.existingGeometry = geometry;
 
-    makeExtrudedGeometryForTree(child, options, startingDepth + tree.distanceTo(child));
+    makeExtrudedGeometryForTree(child, options, childDepth);
   }
   
+  return geometry;
+}
+
+function makeCornerGeometryAt(node, options, depth)
+{
+  var geometry = { vertices: [], normals: [], faces: [], treeDepths: [] };
+
+  var sphere3Geometry = new THREE.SphereGeometry( 1.0, options.radiusSegments, options.radiusSegments );
+
+  for(var v = 0; v < sphere3Geometry.vertices.length; v++)
+  {
+    geometry.normals.push( sphere3Geometry.vertices[v] );
+    geometry.vertices.push( new THREE.Vector3( node.x, node.y, node.z ) );
+  }
+
+  for(var f = 0; f < sphere3Geometry.faces.length; f++)
+  {
+    geometry.faces.push( sphere3Geometry.faces[f] );
+    geometry.treeDepths.push([
+      new THREE.UV(depth, 0.0),
+      new THREE.UV(depth, 0.0),
+      new THREE.UV(depth, 0.0),
+      new THREE.UV(depth, 0.0)
+    ]);
+  }
+
   return geometry;
 }
 

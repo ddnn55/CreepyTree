@@ -35,7 +35,7 @@ treeCurve.root.children[0].addChild(-30.0, 30.0, 0.0);
 treeCurve.root.addChild(-30.0, 30.0, 30.0);
 treeCurve.root.addChild(30.0, -30.0, 30.0);
 
-treeCurve = TreeCurve.random(500);
+treeCurve = TreeCurve.random(100);
 
 // Keep a dictionary of Curve instances
 var splines = {
@@ -366,7 +366,7 @@ function render(seconds) {
 
   parent.rotation.y += ( targetRotation - parent.rotation.y ) * 0.05;
 
-  updateGrowth( 0.5 - 0.5 * Math.sin( seconds / 5.0 ) );
+  //updateGrowth( 0.5 - 0.5 * Math.sin( seconds / 5.0 ) );
 
   if(vineOptions.debugScene)
   {
@@ -380,7 +380,7 @@ function render(seconds) {
 }
 
 function updateGrowth(growth) {
-  tubeMesh.material.uniforms['growth'] = { type: "f", value: growth };
+  treeMaterial.uniforms['growth'] = { type: "f", value: growth };
 }
 
 function addDatGui()
@@ -388,7 +388,7 @@ function addDatGui()
   var VineOptions = function() {
     var _this = this;
     this.radius = 1;
-    this.radiusSegments = 64;
+    this.radiusSegments = 32;
     this.segments = 1000;
     this.growth = 1.0;
     this.scale = 5.0;
@@ -425,7 +425,7 @@ function addDatGui()
   meshFolder.add(vineOptions, 'radius', 0.0, 10.0).onChange(function(radius) {
     tubeMesh.material.uniforms['radius'] = { type: "f", value: radius };
   });
-  meshFolder.add(vineOptions, 'radiusSegments', 3, 64).onFinishChange(update);
+  meshFolder.add(vineOptions, 'radiusSegments', 4, 32).onFinishChange(update);
   meshFolder.add(vineOptions, 'segments', 100, 5000).onFinishChange(update);
   meshFolder.add(vineOptions, 'growth', 0.0, 1.0).onChange(updateGrowth);
   

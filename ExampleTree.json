@@ -1,0 +1,22 @@
+[
+  {
+    id: 0
+    pos: [ x0, y0, z0 ],
+    children: [ 1, 2 ]
+  },
+  {
+    id: 1
+    pos: [ x1, y1, z1 ],
+    children: [ 3 ]
+  },
+  {
+    id: 2
+    pos: [ 2, y2, z2 ],
+    children: [ ]
+  },
+  {
+    id: 3
+    pos: [ x3, y3, z3 ],
+    children: [ ]
+  }
+]
