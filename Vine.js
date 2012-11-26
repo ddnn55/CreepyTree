@@ -29,41 +29,7 @@ var sampleClosedSpline = new THREE.ClosedSplineCurve3([
   new THREE.Vector3(0, -40, 40),
 ]);
 
-var treeCurve = new TreeCurve(0.0, 0.0, 0.0);
-treeCurve.root.addChild(10.0, 10.0, 10.0).addChild(20.0, -30.0, 40.0).addChild(0.0, 0.0, 30.0);
-treeCurve.root.children[0].addChild(-30.0, 30.0, 0.0);
-treeCurve.root.addChild(-30.0, 30.0, 30.0);
-treeCurve.root.addChild(30.0, -30.0, 30.0);
 
-treeCurve = TreeCurve.random(100);
-
-// Keep a dictionary of Curve instances
-var splines = {
-  TreeCurve: treeCurve,
-  GrannyKnot: new THREE.Curves.GrannyKnot(),
-  HeartCurve: new THREE.Curves.HeartCurve(3.5),
-  VivianiCurve: new THREE.Curves.VivianiCurve(70),
-  KnotCurve: new THREE.Curves.KnotCurve(),
-  HelixCurve: new THREE.Curves.HelixCurve(),
-  TrefoilKnot: new THREE.Curves.TrefoilKnot(),
-  TorusKnot: new THREE.Curves.TorusKnot(20),
-  CinquefoilKnot: new THREE.Curves.CinquefoilKnot(20),
-  TrefoilPolynomialKnot: new THREE.Curves.TrefoilPolynomialKnot(14),
-  FigureEightPolynomialKnot: new THREE.Curves.FigureEightPolynomialKnot(),
-  DecoratedTorusKnot4a: new THREE.Curves.DecoratedTorusKnot4a(),
-  DecoratedTorusKnot4b: new THREE.Curves.DecoratedTorusKnot4b(),
-  DecoratedTorusKnot5a: new THREE.Curves.DecoratedTorusKnot5a(),
-  DecoratedTorusKnot5c: new THREE.Curves.DecoratedTorusKnot5c(),
-  PipeSpline: pipeSpline,
-  SampleClosedSpline: sampleClosedSpline
-};
-
-
-
-
-extrudePath = new THREE.Curves.TrefoilKnot();
-
-var closed2 = true;
 var debug = true;
 var parent;
 var tube, tubeMesh, treeMaterial;
@@ -383,15 +349,21 @@ function updateGrowth(growth) {
   treeMaterial.uniforms['growth'] = { type: "f", value: growth };
 }
 
+function update() {
+  vineOptions.radiusSegments = Math.ceil(vineOptions.radiusSegments);
+  addTube(vineOptions);
+  tubeMesh.scale.set(vineOptions.scale, - vineOptions.scale, vineOptions.scale);
+}
+
 function addDatGui()
 {
   var VineOptions = function() {
     var _this = this;
     this.radius = 1;
-    this.radiusSegments = 32;
+    this.radiusSegments = 8;
     this.segments = 1000;
     this.growth = 1.0;
-    this.scale = 5.0;
+    this.scale = 0.7;
     this.debugNormals = function() {
       _this.debugScene = true;
       tubeMesh.material = normalMaterial;
@@ -406,17 +378,11 @@ function addDatGui()
     }
   };
   
-  function update() {
-    vineOptions.radiusSegments = Math.ceil(vineOptions.radiusSegments);
-    addTube(vineOptions);
-    tubeMesh.scale.set(vineOptions.scale, vineOptions.scale, vineOptions.scale);
-  }
-  
   vineOptions = new VineOptions();
   gui = new dat.GUI();
   var viewFolder = gui.addFolder('View');
-  viewFolder.add(vineOptions, 'scale', 1.0, 10.0).onChange(function(scale) {
-    tubeMesh.scale.set( scale, scale, scale );
+  viewFolder.add(vineOptions, 'scale', 0.2, 2.0).onChange(function(scale) {
+    tubeMesh.scale.set( scale, - scale, scale );
   });
   viewFolder.add(vineOptions, 'debugNormals', false);
   viewFolder.add(vineOptions, 'celShade', true);
@@ -432,6 +398,14 @@ function addDatGui()
   viewFolder.open();
   meshFolder.open();
 
-  update();
+  //update();
 }
 
+//treeCurve = TreeCurve.random(100); update();
+
+TreeCurve.loadTree('hamiltonian_horse.json', function(curve) {
+  console.log('starting curve loaded callback');
+  treeCurve = curve;
+  update();
+  console.log('finished curve loaded callback');
+});

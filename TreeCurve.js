@@ -1,16 +1,72 @@
 var RANDOM_SEGMENT_COMPONENT_MAX = 20.0;
 var RANDOM_SEGMENT_COMPONENT_MIN = 3.0;
 
-TreeCurve = function(x, y, z)
+TreeCurve = function()
 {
-  this.root = new TreeCurveNode(x, y, z);
+  //this.root = new TreeCurveNode(x, y, z);
 }
 
 TreeCurve.random = function(segments)
 {
-  var curve = new TreeCurve(0.0, 0.0, 0.0);
+  var curve = new TreeCurve();
+  curve.root = new TreeCurveNode(0.0, 0.0, 0.0);
   curve.root.addRandomTree(segments);
   return curve;
+}
+
+TreeCurve.loadTree = function(url, curveCallback)
+{
+  $.getJSON(url)
+    .success(function(data) {
+      var nodes = [];
+      // nodes by id
+      for(var nodeIndex in data) {
+        var node = data[nodeIndex];
+	node.parents = [];
+        nodes[node.id] = node;
+      }
+      // parents
+      for(var nodeIndex in data) {
+        var node = data[nodeIndex];
+        for(var childIdIndex in node.children)
+	{
+	  var childId = node.children[childIdIndex];
+	  nodes[childId].parents.push(node.id);
+	}
+      }
+      // find root
+      var noParents = [];
+      for(var nodeIndex in nodes) {
+        var node = nodes[nodeIndex];
+	if(node.parents.length == 0)
+	  noParents.push(node);
+      }
+      console.log('Found ', noParents.length, ' root node(s).', noParents);
+      if(noParents.length != 1)
+        console.error('TreeMesh Error: There should be exactly', 1, 'root node in ', url, 'but there are', noParents.length);
+      else
+      {
+        var curve = new TreeCurve();
+	var fileNodeToTreeCurveTree = function(node)
+	{
+	  //console.log('JSON node', node);
+          var newNode = new TreeCurveNode(node.pos[0], node.pos[1], node.pos[2]);
+          for(var c = 0; c < node.children.length; c++)
+	  {
+            var child = nodes[node.children[c]];
+	    newNode.children.push(fileNodeToTreeCurveTree(child));
+	  }
+	  return newNode;
+	}
+	curve.root = fileNodeToTreeCurveTree(noParents[0]);
+
+        console.log('loaded curve:', curve);
+	curveCallback(curve);
+      }
+    })
+    .error(function(data) {
+      console.log('.error', data);
+    });
 }
 
 TreeCurve.prototype.totalLength = function()
