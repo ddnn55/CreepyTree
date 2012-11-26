@@ -328,11 +328,18 @@ function animate() {
 
 }
 
+var growth = 0.0;
+var lastTime;
 function render(seconds) {
+  lastTime = lastTime || seconds - 1.0/60.0;
+  timeDelta = seconds - lastTime;
 
   parent.rotation.y += ( targetRotation - parent.rotation.y ) * 0.05;
 
-  //updateGrowth( 0.5 - 0.5 * Math.sin( seconds / 5.0 ) );
+  //if(tubeMesh) updateGrowth( 0.5 - 0.5 * Math.sin( vineOptions.growSpeed * seconds ) );
+  growth += vineOptions.growSpeed * timeDelta;
+  if ( growth > 1.0 ) growth = 0.0;
+  if(tubeMesh && vineOptions.animateGrowth) updateGrowth( growth );
 
   if(vineOptions.debugScene)
   {
@@ -343,10 +350,12 @@ function render(seconds) {
     renderer.render( scene, camera, zTexture, true );
     renderer.render( celPostProcessScene, celPostProcessCamera );
   }
+
+  lastTime = seconds;
 }
 
 function updateGrowth(growth) {
-  treeMaterial.uniforms['growth'] = { type: "f", value: growth };
+  tubeMesh.material.uniforms['growth'] = { type: "f", value: growth };
 }
 
 function update() {
@@ -363,15 +372,18 @@ function addDatGui()
     this.radiusSegments = 8;
     this.segments = 1000;
     this.growth = 1.0;
+    this.growPeriod = 0.05;
+    this.growSpeed = 0.2;
+    this.animateGrowth = true;
     this.scale = 0.7;
-    this.debugNormals = function() {
+    /*this.debugNormals = function() {
       _this.debugScene = true;
       tubeMesh.material = normalMaterial;
     };
     this.celShade = function() {
       _this.debugScene = false;
       tubeMesh.material = treeMaterial;
-    };
+    };*/
     this.grow = function() {
       _this.growth = 0.0;
       _this.animateGrowth = true;
@@ -384,8 +396,10 @@ function addDatGui()
   viewFolder.add(vineOptions, 'scale', 0.2, 2.0).onChange(function(scale) {
     tubeMesh.scale.set( scale, - scale, scale );
   });
-  viewFolder.add(vineOptions, 'debugNormals', false);
-  viewFolder.add(vineOptions, 'celShade', true);
+  viewFolder.add(vineOptions, 'growSpeed', 0.0, 0.2);
+  viewFolder.add(vineOptions, 'animateGrowth');
+  //viewFolder.add(vineOptions, 'debugNormals', false);
+  //viewFolder.add(vineOptions, 'celShade', true);
 
   var meshFolder = gui.addFolder('Mesh');
   meshFolder.add(vineOptions, 'radius', 0.0, 10.0).onChange(function(radius) {
@@ -393,6 +407,9 @@ function addDatGui()
   });
   meshFolder.add(vineOptions, 'radiusSegments', 4, 32).onFinishChange(update);
   meshFolder.add(vineOptions, 'segments', 100, 5000).onFinishChange(update);
+  meshFolder.add(vineOptions, 'growPeriod', 0.0, 0.01).onChange(function(growPeriod) {
+    tubeMesh.material.uniforms['growPeriod'] = { type: "f", value: Math.max(0.0001, growPeriod) };
+  });
   meshFolder.add(vineOptions, 'growth', 0.0, 1.0).onChange(updateGrowth);
   
   viewFolder.open();
