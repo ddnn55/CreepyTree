@@ -368,12 +368,12 @@ function addDatGui()
 {
   var VineOptions = function() {
     var _this = this;
-    this.radius = 1;
+    this.radius = 5.5;
     this.radiusSegments = 8;
     this.segments = 1000;
     this.growth = 1.0;
-    this.growPeriod = 0.05;
-    this.growSpeed = 0.2;
+    this.growPeriod = 0.006;
+    this.growSpeed = 0.03;
     this.animateGrowth = true;
     this.scale = 0.7;
     /*this.debugNormals = function() {
@@ -407,7 +407,7 @@ function addDatGui()
   });
   meshFolder.add(vineOptions, 'radiusSegments', 4, 32).onFinishChange(update);
   meshFolder.add(vineOptions, 'segments', 100, 5000).onFinishChange(update);
-  meshFolder.add(vineOptions, 'growPeriod', 0.0, 0.01).onChange(function(growPeriod) {
+  meshFolder.add(vineOptions, 'growPeriod', 0.0, 0.05).onChange(function(growPeriod) {
     tubeMesh.material.uniforms['growPeriod'] = { type: "f", value: Math.max(0.0001, growPeriod) };
   });
   meshFolder.add(vineOptions, 'growth', 0.0, 1.0).onChange(updateGrowth);
