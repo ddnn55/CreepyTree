@@ -341,14 +341,18 @@ function render(seconds) {
   if ( growth > 1.0 ) growth = 0.0;
   if(tubeMesh && vineOptions.animateGrowth) updateGrowth( growth );
 
-  if(vineOptions.debugScene)
+  switch(vineOptions.renderStage)
   {
-    renderer.render( scene, camera );
-  }
-  else 
-  {
-    renderer.render( scene, camera, zTexture, true );
-    renderer.render( celPostProcessScene, celPostProcessCamera );
+    case 'cel':
+      renderer.render( scene, camera, zTexture, true );
+      renderer.render( celPostProcessScene, celPostProcessCamera );
+      break;
+    case 'wireframe':
+      console.warn('wireframe view not implemented');
+      break;
+    case 'z-buffer':
+      console.warn('z-buffer view not implemented');
+      break;
   }
 
   lastTime = seconds;
@@ -376,6 +380,7 @@ function addDatGui()
     this.growSpeed = 0.03;
     this.animateGrowth = true;
     this.scale = 0.7;
+    this.renderStage = 'cel';
     /*this.debugNormals = function() {
       _this.debugScene = true;
       tubeMesh.material = normalMaterial;
@@ -398,6 +403,7 @@ function addDatGui()
   });
   viewFolder.add(vineOptions, 'growSpeed', 0.0, 0.2);
   viewFolder.add(vineOptions, 'animateGrowth');
+  viewFolder.add( vineOptions, 'renderStage', [ 'wireframe', 'z-buffer', 'cel' ] );
   //viewFolder.add(vineOptions, 'debugNormals', false);
   //viewFolder.add(vineOptions, 'celShade', true);
 
