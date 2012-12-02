@@ -69,49 +69,22 @@ function addGeometry( geometry, material ) {
   console.log(tubeMesh);
 }
 
-function animateCamera( toggle ) {
-
-  if ( toggle ) {
-
-    animation = animation === false;
-
-  }
-
-  lookAhead = document.getElementById('lookAhead').checked;
-
-  showCameraHelper = document.getElementById('cameraHelper').checked;
-
-  cameraHelper.visible = showCameraHelper;
-  cameraEye.visible = showCameraHelper;
-}
-
-
 init();
 animate();
 
 function init() {
 
   container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.top = '0px';
+  container.style.left = '0px';
+  container.style.right = '0px';
+  container.style.bottom = '0px';
+  
   document.body.appendChild(container);
 
-  var info = document.createElement('div');
-  info.style.position = 'absolute';
-  info.style.top = '10px';
-  info.style.width = '100%';
-  info.style.textAlign = 'center';
-  //info.innerHTML = 'Spline Extrusion Examples by <a href="http://www.lab4games.net/zz85/blog">zz85</a><br/>Select spline:';
-
-  //info.innerHTML += dropdown;
-
-  //info.innerHTML += '<br/>Scale: <select id="scale" onchange="setScale()"><option>1</option><option>2</option><option selected>4</option><option>6</option><option>10</option></select>';
-
-
-  container.appendChild(info);
-
-  //
-
   camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 1000);
-  camera.position.set(0, 50, 500);
+  camera.position.set(0, 0, 500);
 
   scene = new THREE.Scene();
 
@@ -193,6 +166,8 @@ function init() {
         "}",
 
 	"float color = 1.0 - pow(totalDiff, 1.0);",
+	"if(color == 1.0 && pixelValue == 1.0)",
+	"  color = 0.8;",
         
 
         "gl_FragColor = vec4(color, color, color, 1.0);",
@@ -351,7 +326,7 @@ function render(seconds) {
       console.warn('wireframe view not implemented');
       break;
     case 'z-buffer':
-      console.warn('z-buffer view not implemented');
+      renderer.render( scene, camera );
       break;
   }
 
