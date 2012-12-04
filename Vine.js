@@ -342,13 +342,12 @@ function render(seconds) {
   lastTime = seconds;
 }
 
-function updateGrowth(/*growth*/) {
+function updateGrowth() {
   tubeMesh.material.uniforms['growPeriod'] = { type: "f", value: Math.max(0.0001, vineOptions.growPeriod) };
   tubeMesh.material.uniforms['growth'] = {
     type: "f",
     value: vineOptions.growth / ( 1.0 - vineOptions.growPeriod )
   };
-  console.log('updateGrowth() ran', vineOptions.growth / ( 1.0 - tubeMesh.material.uniforms['growPeriod'] ));
 }
 
 function update() {
