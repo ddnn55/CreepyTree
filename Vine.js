@@ -313,9 +313,13 @@ function render(seconds) {
   parent.rotation.y += ( targetRotation - parent.rotation.y ) * 0.05;
 
   //if(tubeMesh) updateGrowth( 0.5 - 0.5 * Math.sin( vineOptions.growSpeed * seconds ) );
-  growth += vineOptions.growSpeed * timeDelta;
-  if ( growth > 1.0 ) growth = 0.0;
-  if(tubeMesh && vineOptions.animateGrowth) updateGrowth( growth );
+  if(tubeMesh && vineOptions.animateGrowth)
+  {
+    growth += vineOptions.growSpeed * timeDelta;
+    if ( growth > 1.0 ) growth = 0.0;
+    vineOptions.growth = growth;
+    updateGrowth( growth );
+  }
 
   if(tubeMesh)
   switch(vineOptions.renderStage)
@@ -338,8 +342,13 @@ function render(seconds) {
   lastTime = seconds;
 }
 
-function updateGrowth(growth) {
-  tubeMesh.material.uniforms['growth'] = { type: "f", value: growth };
+function updateGrowth(/*growth*/) {
+  tubeMesh.material.uniforms['growPeriod'] = { type: "f", value: Math.max(0.0001, vineOptions.growPeriod) };
+  tubeMesh.material.uniforms['growth'] = {
+    type: "f",
+    value: vineOptions.growth / ( 1.0 - vineOptions.growPeriod )
+  };
+  console.log('updateGrowth() ran', vineOptions.growth / ( 1.0 - tubeMesh.material.uniforms['growPeriod'] ));
 }
 
 function update() {
@@ -394,7 +403,7 @@ function addDatGui()
   meshFolder.add(vineOptions, 'radiusSegments', 4, 32).onFinishChange(update);
   meshFolder.add(vineOptions, 'segments', 100, 5000).onFinishChange(update);
   meshFolder.add(vineOptions, 'growPeriod', 0.0, 0.05).onChange(function(growPeriod) {
-    tubeMesh.material.uniforms['growPeriod'] = { type: "f", value: Math.max(0.0001, growPeriod) };
+    updateGrowth();
   });
   meshFolder.add(vineOptions, 'growth', 0.0, 1.0).onChange(updateGrowth);
   
