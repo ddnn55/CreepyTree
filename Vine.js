@@ -50,7 +50,8 @@ function addTube(options) {
     transparent: true,
     growth: options.growth,
     radius: options.radius,
-    growPeriod: 0.05
+    growPeriod: 0.05,
+    wireframe: true
   });
   
   console.log(treeCurve.maxDepth());
@@ -316,16 +317,20 @@ function render(seconds) {
   if ( growth > 1.0 ) growth = 0.0;
   if(tubeMesh && vineOptions.animateGrowth) updateGrowth( growth );
 
+  if(tubeMesh)
   switch(vineOptions.renderStage)
   {
     case 'cel':
+      tubeMesh.material.wireframe = false;
       renderer.render( scene, camera, zTexture, true );
       renderer.render( celPostProcessScene, celPostProcessCamera );
       break;
     case 'wireframe':
-      console.warn('wireframe view not implemented');
+      tubeMesh.material.wireframe = true;
+      renderer.render( scene, camera );
       break;
     case 'z-buffer':
+      tubeMesh.material.wireframe = false;
       renderer.render( scene, camera );
       break;
   }
